@@ -26,41 +26,6 @@ mongoose
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-// // Setup GridFS
-// let gfs;
-// const conn = mongoose.connection;
-
-// conn.once("open", () => {
-//   const Grid = require("gridfs-stream");
-//   gfs = Grid(conn.db, mongoose.mongo);
-//   gfs.collection("uploads");
-// });
-
-// // Set up storage engine
-// const storage = new GridFsStorage({
-//   url: process.env.MONGO_URI,
-//   file: (req, file) => {
-//     return new Promise((resolve, reject) => {
-//       crypto.randomBytes(16, (err, buf) => {
-//         if (err) return reject(err);
-//         const filename = buf.toString("hex") + path.extname(file.originalname);
-//         const fileInfo = {
-//           filename: filename,
-//           bucketName: "uploads", // name of the GridFS bucket
-//         };
-//         resolve(fileInfo);
-//       });
-//     });
-//   },
-// });
-
-// const upload = multer({ storage });
-
-// // Endpoint to handle image upload
-// app.post("/upload", upload.single("evidence"), (req, res) => {
-//   res.json({ file: req.file });
-// });
-
 // Schema for Report
 const reportSchema = new mongoose.Schema({
   abuserName: String,
@@ -74,6 +39,8 @@ const reportSchema = new mongoose.Schema({
   victimAge: String,
   victimGender: String,
   victimDisability: String,
+  latitude: Number,
+  longitude: Number,
   date: {
     type: Date,
     default: Date.now,
@@ -104,6 +71,7 @@ app.post("/api/reports", async (req, res) => {
 
 // User Model
 const UserSchema = new mongoose.Schema({
+  name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 });
@@ -115,7 +83,7 @@ app.post("/signup", async (req, res) => {
   try {
     console.log("➡️ Signup request received:", req.body);
 
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
     if (!email || !password) {
       console.warn("⚠️ Missing email or password");
       return res.status(400).json({ error: "Missing email or password" });
@@ -133,7 +101,7 @@ app.post("/signup", async (req, res) => {
     console.log("🔑 Hashed Password:", hashedPassword);
 
     // Create user
-    const user = new User({ email, password: hashedPassword });
+    const user = new User({ name, email, password: hashedPassword });
     await user.save();
     console.log("✅ User created successfully:", user);
 

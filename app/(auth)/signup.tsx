@@ -9,6 +9,7 @@ const API_URL = "http://192.168.18.16:5000";
 
 export default function Auth() {
     const router = useRouter();
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function Auth() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ name: name, email: email, password: password }),
             });
 
             const data = await response.json();
@@ -50,12 +51,20 @@ export default function Auth() {
             <View style={styles.container}>
                 <Image
                     style={styles.logo}
-                    source={require("../../assets/img/familytimelogo.png")}
+                    source={require("../../assets/img/newlogo.png")}
                     resizeMode="contain"
                 />
                 <Text style={styles.title}>Signup</Text>
 
                 <View style={styles.form}>
+                    <Input
+                        label="Name"
+                        leftIcon={{ type: "font-awesome", name: "user", size: 22 }}
+                        onChangeText={setName}
+                        value={name}
+                        placeholder="Enter your full name"
+                        autoCapitalize="none"
+                    />
                     <Input
                         label="Email"
                         leftIcon={{ type: "font-awesome", name: "envelope", size: 22 }}
@@ -96,9 +105,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     logo: {
-        width: 180,
-        height: 180,
-        marginBottom: -20,
+        width: 230,
+        height: 230,
+        marginBottom: -10,
     },
     title: {
         fontSize: 28,
@@ -111,7 +120,7 @@ const styles = StyleSheet.create({
         width: "100%",
     },
     signUpButton: {
-        backgroundColor: "#2a5d9c",
+        backgroundColor: "#21285c",
         borderRadius: 10,
         paddingVertical: 12,
     },

@@ -1,4 +1,5 @@
 import * as FileSystem from "expo-file-system";
+import * as Location from "expo-location";
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
@@ -65,7 +66,39 @@ const ReportForm = ({ onSubmit }) => {
     const prevStep = () => setStep((prev) => prev - 1);
 
     const submitForm = async () => {
+        // Prevent submission if required fields are empty
+        const requiredFields = [
+            "abuserName",
+            "abuserGender",
+            "abuserAge",
+            "relationship",
+            "natureOfAbuse",
+            "location",
+            "victimName",
+            "victimAge",
+            "victimGender",
+        ];
+
+        const hasEmptyField = requiredFields.some(field => !formData[field].trim());
+
+        if (hasEmptyField) {
+            alert("Please fill out all required fields before submitting the form.");
+            return;
+        }
+
         try {
+            // Request location permission
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                alert("Permission to access location was denied.");
+                return;
+            }
+
+            // Get current location
+            const location = await Location.getCurrentPositionAsync({});
+            const latitude = location.coords.latitude;
+            const longitude = location.coords.longitude;
+
             const evidenceBase64Array = await Promise.all(
                 formData.evidence.map(async (uri) => {
                     const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -81,6 +114,8 @@ const ReportForm = ({ onSubmit }) => {
             const formToSend = {
                 ...formData,
                 evidence: evidenceBase64Array,
+                latitude,
+                longitude,
             };
 
             const response = await fetch("http://192.168.18.16:5000/api/reports", {
@@ -93,7 +128,9 @@ const ReportForm = ({ onSubmit }) => {
 
             const data = await response.json();
             console.log("Server response:", data);
+            alert("Report submitted successfully!");
             resetForm();
+            setStep(1);
         } catch (error) {
             console.error("Submission error:", error);
         }

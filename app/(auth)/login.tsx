@@ -47,7 +47,7 @@ export default function Auth() {
                         <Image
                             style={styles.logo}
                             resizeMode="contain"
-                            source={require("../../assets/img/familytimelogo.png")}
+                            source={require("../../assets/img/newlogo.png")}
                         />
                     </View>
                     <Text style={styles.loginTitle}>Login</Text>
@@ -111,9 +111,9 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     logo: {
-        width: 180,
-        height: 180,
-        marginBottom: -20,
+        width: 230,
+        height: 230,
+        marginBottom: -10,
     },
     loginTitle: {
         fontSize: 28,
@@ -130,7 +130,7 @@ const styles = StyleSheet.create({
         color: "#333",
     },
     signinButton: {
-        backgroundColor: "#2a5d9c",
+        backgroundColor: "#21285c",
         padding: 10,
         borderRadius: 10,
         marginTop: 10,
