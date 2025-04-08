@@ -1,9 +1,11 @@
 import * as FileSystem from "expo-file-system";
 import * as Location from "expo-location";
-import React, { useState } from "react";
+import React, { useState, useLayoutEffect } from "react";
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
 
 
 const ReportForm = ({ onSubmit }) => {
@@ -135,6 +137,7 @@ const ReportForm = ({ onSubmit }) => {
             console.error("Submission error:", error);
         }
     };
+
 
     return (
         <ScrollView style={styles.container}>

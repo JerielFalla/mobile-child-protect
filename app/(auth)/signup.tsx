@@ -12,6 +12,7 @@ export default function Auth() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [phone, setPhone] = useState("");
     const [loading, setLoading] = useState(false);
 
     const handleSignup = async () => {
@@ -27,7 +28,7 @@ export default function Auth() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ name: name, email: email, password: password }),
+                body: JSON.stringify({ name: name, email: email, password: password, phone }),
             });
 
             const data = await response.json();
@@ -82,6 +83,14 @@ export default function Auth() {
                         placeholder="Enter your password"
                         autoCapitalize="none"
                     />
+                    <Input
+                        label="Phone Number"
+                        leftIcon={{ type: "font-awesome", name: "phone", size: 28 }}
+                        onChangeText={setPhone}
+                        value={phone}
+                        placeholder="Enter your phone number"
+                        autoCapitalize="none"
+                    />
                     <Button title="Sign up" buttonStyle={styles.signUpButton} onPress={handleSignup} loading={loading} />
                 </View>
 
@@ -105,9 +114,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     logo: {
-        width: 230,
-        height: 230,
-        marginBottom: -10,
+        width: 180,
+        height: 180,
+        marginTop: -40,
     },
     title: {
         fontSize: 28,

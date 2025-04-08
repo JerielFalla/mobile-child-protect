@@ -74,6 +74,8 @@ const UserSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  phone: { type: String, required: true },
+  avatar: { type: String },
 });
 
 const User = mongoose.model("User", UserSchema);
@@ -83,31 +85,43 @@ app.post("/signup", async (req, res) => {
   try {
     console.log("➡️ Signup request received:", req.body);
 
-    const { name, email, password } = req.body;
+    const { name, email, password, phone } = req.body;
     if (!email || !password) {
-      console.warn("⚠️ Missing email or password");
+      console.warn("Missing email or password");
       return res.status(400).json({ error: "Missing email or password" });
     }
 
     // Check if user exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      console.warn("⚠️ User already exists:", email);
+      console.warn("User already exists:", email);
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    // Check if phone exists
+    const existingPhone = await User.findOne({ phone });
+    if (existingPhone) {
+      console.warn("User already exists:", phone);
       return res.status(400).json({ error: "User already exists" });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("🔑 Hashed Password:", hashedPassword);
+    console.log("Hashed Password:", hashedPassword);
 
     // Create user
-    const user = new User({ name, email, password: hashedPassword });
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phone: phone,
+    });
     await user.save();
-    console.log("✅ User created successfully:", user);
+    console.log("User created successfully:", user);
 
     res.status(201).json({ message: "Signup successful" });
   } catch (err) {
-    console.error("❌ Error during signup:", err);
+    console.error("Error during signup:", err);
     res
       .status(500)
       .json({ error: "Internal server error", details: err.message });
@@ -134,9 +148,36 @@ app.post("/login", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.json({ token });
+    res.json({
+      token,
+      userId: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+    });
   } catch (err) {
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get User Profile
+app.get("/api/users/:id", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("-password");
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching user data" });
+  }
+});
+
+// Update Avatar
+app.post("/api/users/:id/avatar", async (req, res) => {
+  try {
+    const { avatar } = req.body;
+    await User.findByIdAndUpdate(req.params.id, { avatar });
+    res.json({ message: "Avatar updated" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update avatar" });
   }
 });
 

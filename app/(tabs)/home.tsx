@@ -1,9 +1,15 @@
 import React from "react";
-import { ScrollView, Text, View, StyleSheet } from "react-native";
+import { ScrollView, Text, View, StyleSheet, Image, } from "react-native";
 
 const Home = () => {
     return (
         <View style={styles.mainContainer}>
+            {/* Logo in the background */}
+            <Image
+                source={require("../../assets/img/newlogo.png")} // Replace with the correct path to your logo
+                style={styles.logo}
+            />
+
             <ScrollView contentContainerStyle={styles.scrollContainer}>
                 <View style={styles.headerContainer}>
                     <Text style={styles.headerTitle}>Welcome Home</Text>
@@ -25,6 +31,7 @@ const styles = StyleSheet.create({
     mainContainer: {
         flex: 1,
         backgroundColor: "#F5F7FA",
+        position: 'relative', // Required for absolute positioning of logo
     },
     scrollContainer: {
         flexGrow: 1,
@@ -62,5 +69,14 @@ const styles = StyleSheet.create({
     sectionContent: {
         fontSize: 16,
         color: "#666",
+    },
+    logo: {
+        position: 'absolute',
+        top: '50%', // Center it vertically
+        left: '50%', // Center it horizontally
+        transform: [{ translateX: -100 }, { translateY: -100 }], // Adjust size of the logo and position
+        opacity: 0.3, // Low opacity for background effect
+        width: 200, // Adjust width as needed
+        height: 200, // Adjust height as needed
     },
 });

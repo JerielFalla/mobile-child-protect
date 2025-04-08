@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { StyleSheet, View, Image, Text, Alert } from "react-native";
 import { Button, Input } from "@rneui/themed";
-import { FontAwesome } from "@expo/vector-icons";
-import { TouchableOpacity, GestureHandlerRootView, Pressable } from "react-native-gesture-handler";
+import { GestureHandlerRootView, Pressable } from "react-native-gesture-handler";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const API_URL = "http://192.168.18.16:5000"; // Replace with your backend URL
 
@@ -25,13 +26,21 @@ export default function Auth() {
             });
 
             const data = await response.json();
-
+            console.log("LOGIN RESPONSE:", data);
             if (!response.ok) {
                 throw new Error(data.error || "Login failed");
             }
 
+            // Save userId and token to AsyncStorage
+            // Save userId (and optionally token, name, email)
+            await AsyncStorage.setItem('userId', data.userId);
+            await AsyncStorage.setItem('token', data.token);
+            await AsyncStorage.setItem('name', data.name);
+            await AsyncStorage.setItem('email', data.email);
+            await AsyncStorage.setItem('phone', data.phone);
+
             Alert.alert("Success", "Login successful!");
-            router.replace("/home"); // Redirect to home or dashboard screen
+            router.replace("/home");
         } catch (error) {
             Alert.alert("Error", error.message);
         } finally {
@@ -111,9 +120,9 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     logo: {
-        width: 230,
-        height: 230,
-        marginBottom: -10,
+        width: 180,
+        height: 180,
+        marginTop: -50,
     },
     loginTitle: {
         fontSize: 28,
