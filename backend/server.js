@@ -11,7 +11,10 @@ const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+<<<<<<< HEAD
 const { StreamChat } = require("stream-chat");
+=======
+>>>>>>> 107d8c0f40a03b7a83a0ad82032e64828b578647
 
 // Middleware
 app.use(express.json({ limit: "10mb" }));
@@ -128,11 +131,17 @@ app.post("/signup", async (req, res) => {
       .json({ error: "Internal server error", details: err.message });
   }
 });
+<<<<<<< HEAD
 // LOGIN ROUTE
+=======
+
+// Login Route
+>>>>>>> 107d8c0f40a03b7a83a0ad82032e64828b578647
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
+<<<<<<< HEAD
     console.log("📩 Login request:", email);
 
     const user = await User.findOne({ email });
@@ -147,10 +156,24 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ error: "Invalid email or password" });
     }
 
+=======
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user)
+      return res.status(400).json({ error: "Invalid email or password" });
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(400).json({ error: "Invalid email or password" });
+
+    // Create JWT token
+>>>>>>> 107d8c0f40a03b7a83a0ad82032e64828b578647
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
 
+<<<<<<< HEAD
     console.log("🔑 JWT generated");
 
     const streamChat = StreamChat.getInstance(
@@ -168,16 +191,23 @@ app.post("/login", async (req, res) => {
 
     console.log("✅ Chat token created");
 
+=======
+>>>>>>> 107d8c0f40a03b7a83a0ad82032e64828b578647
     res.json({
       token,
       userId: user._id,
       name: user.name,
       email: user.email,
       phone: user.phone,
+<<<<<<< HEAD
       chatToken,
     });
   } catch (err) {
     console.error("🔥 Login Error:", err);
+=======
+    });
+  } catch (err) {
+>>>>>>> 107d8c0f40a03b7a83a0ad82032e64828b578647
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -203,6 +233,7 @@ app.post("/api/users/:id/avatar", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // Backend endpoint example
 app.post("/chat/token", async (req, res) => {
   const { userId } = req.body;
@@ -213,5 +244,7 @@ app.post("/chat/token", async (req, res) => {
   res.json({ token });
 });
 
+=======
+>>>>>>> 107d8c0f40a03b7a83a0ad82032e64828b578647
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

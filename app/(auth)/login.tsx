@@ -4,7 +4,6 @@ import { StyleSheet, View, Image, Text, Alert } from "react-native";
 import { Button, Input } from "@rneui/themed";
 import { GestureHandlerRootView, Pressable } from "react-native-gesture-handler";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { streamClient } from "../../lib/streamClient";
 
 
 const API_URL = "http://192.168.18.16:5000"; // Replace with your backend URL
@@ -32,29 +31,15 @@ export default function Auth() {
                 throw new Error(data.error || "Login failed");
             }
 
-
-            const chatTokenRes = await fetch(`${API_URL}/chat/token`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: data.userId }),
-            });
-
-            const raw = await chatTokenRes.text(); // 👀 inspect this first
-            console.log("Raw chatToken response:", raw);
-
-            const chatTokenData = JSON.parse(raw); // parse manually in case of strange characters
-
-            // Keep only this:
+            // Save userId and token to AsyncStorage
+            // Save userId (and optionally token, name, email)
             await AsyncStorage.setItem('userId', data.userId);
+            await AsyncStorage.setItem('token', data.token);
             await AsyncStorage.setItem('name', data.name);
             await AsyncStorage.setItem('email', data.email);
             await AsyncStorage.setItem('phone', data.phone);
-            await AsyncStorage.setItem('chatToken', chatTokenData.token);
-
 
             Alert.alert("Success", "Login successful!");
-            await streamClient.disconnectUser(); // <- force reset before new login
-
             router.replace("/home");
         } catch (error) {
             Alert.alert("Error", error.message);
