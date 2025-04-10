@@ -33,11 +33,13 @@ export default function Auth() {
 
             // Save userId and token to AsyncStorage
             // Save userId (and optionally token, name, email)
-            await AsyncStorage.setItem('userId', data.userId);
-            await AsyncStorage.setItem('token', data.token);
+            await AsyncStorage.setItem('userId', data.userId.toString());
+            await AsyncStorage.setItem('token', data.chatToken);
             await AsyncStorage.setItem('name', data.name);
             await AsyncStorage.setItem('email', data.email);
             await AsyncStorage.setItem('phone', data.phone);
+
+            console.log("chatToken:", data.chatToken);
 
             Alert.alert("Success", "Login successful!");
             router.replace("/home");

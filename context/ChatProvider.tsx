@@ -1,41 +1,43 @@
-// context/ChatProvider.tsx
 import React, { useEffect, useState } from 'react';
-import { StreamChat } from 'stream-chat';
 import { OverlayProvider, Chat } from 'stream-chat-expo';
 import { streamClient } from '../lib/streamClient';
 import { getStoredUserInfo } from '../utils/auth';
 import { ActivityIndicator, View } from 'react-native';
 
-type Props = {
-    children: React.ReactNode;
-};
+type Props = { children: React.ReactNode };
 
 export default function ChatProvider({ children }: Props) {
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
         const setupChat = async () => {
-            try {
-                const userInfo = await getStoredUserInfo();
-                if (!userInfo?.userId || !userInfo?.token) {
-                    throw new Error('User info or token not found.');
-                }
+            const userInfo = await getStoredUserInfo();
+            console.log("📦 Stored user info:", userInfo);
+            if (!userInfo) {
+                console.log("🔌 No Stream user info, skipping connection");
+                setIsReady(true); // Still let app load
+                return;
+            }
 
-                // Disconnect any existing user
+            try {
                 if (streamClient.userID) {
                     await streamClient.disconnectUser();
                 }
 
+                // Use the correct chatToken
                 await streamClient.connectUser(
-                    {
-                        id: userInfo.userId,
-                        name: userInfo.name || userInfo.userId,
-                    },
-                    userInfo.token
+                    { id: userInfo.userId, name: userInfo.name || userInfo.userId },
+                    userInfo.chatToken // Updated to chatToken
                 );
+                console.log("✅ Stream connected:", userInfo.userId);
+                console.log("⚡ Connecting to Stream with:", {
+                    id: userInfo.userId,
+                    name: userInfo.name,
+                    token: userInfo.chatToken, // Updated to chatToken
+                });
+
             } catch (err) {
-                console.error('Stream connection failed:', err);
-                Alert.alert('Chat Error', 'Could not connect to chat. Try logging out and back in.');
+                console.error("Stream connection failed:", err);
             } finally {
                 setIsReady(true);
             }

@@ -47,13 +47,14 @@ export default function UserListScreen() {
         });
     };
 
-    if (loading) {
+    if (!client.user?.id) {
         return (
-            <View style={{ marginTop: 20 }}>
-                <ActivityIndicator />
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
             </View>
         );
     }
+
 
     return (
         <FlatList
