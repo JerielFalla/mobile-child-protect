@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
-import { AntDesign, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { AntDesign, FontAwesome5, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import Drawer from '../(drawer)/index'; // Adjust the path as needed
 import ChatProvider from "../../context/ChatProvider";
 
@@ -70,6 +70,24 @@ export default function TabsLayout() {
                             tabBarLabel: "Chats",
                             tabBarIcon: ({ color, size }) => (
                                 <AntDesign name="message1" size={size} color={color} />
+                            ),
+                            headerLeft: () => (
+                                <TouchableOpacity
+                                    style={styles.headerLeftStyle}
+                                    onPress={toggleDrawer}
+                                >
+                                    <Ionicons name="menu" size={28} />
+                                </TouchableOpacity>
+                            ),
+                        }}
+                    />
+
+                    <Tabs.Screen
+                        name="resources"
+                        options={{
+                            tabBarLabel: "Resources",
+                            tabBarIcon: ({ color, size }) => (
+                                <MaterialCommunityIcons name="bookshelf" size={size} color={color} />
                             ),
                             headerLeft: () => (
                                 <TouchableOpacity

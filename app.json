@@ -3,6 +3,9 @@
     "name": "frontend",
     "slug": "frontend",
     "version": "1.0.0",
-    "plugins": ["expo-router"]
+    "plugins": ["expo-router"],
+    "android": {
+      "package": "com.x202110092.frontend"
+    }
   }
 }

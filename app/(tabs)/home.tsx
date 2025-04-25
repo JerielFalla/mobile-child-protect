@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
         top: '50%', // Center it vertically
         left: '50%', // Center it horizontally
         transform: [{ translateX: -100 }, { translateY: -100 }], // Adjust size of the logo and position
-        opacity: 0.3, // Low opacity for background effect
+        opacity: 0.5, // Low opacity for background effect
         width: 200, // Adjust width as needed
         height: 200, // Adjust height as needed
     },
