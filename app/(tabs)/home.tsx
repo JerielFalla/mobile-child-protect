@@ -1,82 +1,198 @@
-import React from "react";
-import { ScrollView, Text, View, StyleSheet, Image, } from "react-native";
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, Image, StyleSheet, ActivityIndicator, TouchableOpacity } from 'react-native';
+import axios from 'axios';
 
-const Home = () => {
+const HomeScreen = () => {
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [expandedArticleId, setExpandedArticleId] = useState(null);
+
+    useEffect(() => {
+        fetchArticles();
+    }, []);
+
+    const fetchArticles = async () => {
+        try {
+            const response = await axios.get('http://192.168.18.16:5000/api/articles');
+            // Sort articles by createdAt descending (latest first)
+            const sortedArticles = response.data.sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+            setArticles(sortedArticles);
+        } catch (error) {
+            console.error('Error fetching articles:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleCardPress = (id) => {
+        setExpandedArticleId(expandedArticleId === id ? null : id);
+    };
+
+    const renderArticleItem = ({ item, index }) => {
+        const isFeatured = index === 0;
+        return (
+            <TouchableOpacity onPress={() => handleCardPress(item._id)}>
+                <View style={isFeatured ? styles.featuredCard : styles.articleItem}>
+                    <Image
+                        source={{ uri: item.thumbnail }}
+                        style={isFeatured ? styles.featuredImage : styles.articleThumbnail}
+                    />
+                    <View style={isFeatured ? {} : styles.articleContent}>
+                        <Text style={isFeatured ? styles.featuredTitle : styles.articleTitle} numberOfLines={2}>
+                            {item.title}
+                        </Text>
+                        <View style={isFeatured ? styles.featuredMeta : styles.metaInfo}>
+                            <Text style={isFeatured ? styles.featuredAuthor : styles.metaDate}>Admin</Text>
+                            <Text style={isFeatured ? styles.featuredDate : styles.metaDot}>•</Text>
+                            <Text style={isFeatured ? styles.featuredDate : styles.metaRead}>
+                                {new Date(item.createdAt).toDateString()}
+                            </Text>
+                        </View>
+                        {expandedArticleId === item._id && (
+                            <Text style={isFeatured ? styles.articleDescription : styles.articleDescription}>
+                                {item.description}
+                            </Text>
+                        )}
+                    </View>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#007BFF" style={styles.loader} />;
+    }
+
     return (
-        <View style={styles.mainContainer}>
-            {/* Logo in the background */}
-            <Image
-                source={require("../../assets/img/newlogo.png")} // Replace with the correct path to your logo
-                style={styles.logo}
+        <View style={styles.container}>
+            <Text style={styles.headerDate}>{new Date().toDateString()}</Text>
+            <Text style={styles.breakingNews}>Latest Article</Text>
+
+            <FlatList
+                data={articles}
+                keyExtractor={(item) => item._id}
+                renderItem={renderArticleItem}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.articleList}
             />
-
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <View style={styles.headerContainer}>
-                    <Text style={styles.headerTitle}>Welcome Home</Text>
-                    <Text style={styles.subtitle}>Your daily overview</Text>
-                </View>
-
-                <View style={styles.sectionContainer}>
-                    <Text style={styles.sectionTitle}>Highlights</Text>
-                    <Text style={styles.sectionContent}>Stay updated with the latest activities.</Text>
-                </View>
-            </ScrollView>
         </View>
     );
 };
 
-export default Home;
-
 const styles = StyleSheet.create({
-    mainContainer: {
+    container: {
         flex: 1,
-        backgroundColor: "#F5F7FA",
-        position: 'relative', // Required for absolute positioning of logo
+        backgroundColor: '#f6f8fc',
+        paddingHorizontal: 16,
+        paddingTop: 40,
     },
-    scrollContainer: {
-        flexGrow: 1,
-        padding: 20,
+    headerDate: {
+        fontSize: 14,
+        color: '#888',
+        marginBottom: 16,
     },
-    headerContainer: {
-        marginBottom: 20,
-        alignItems: "center",
-    },
-    headerTitle: {
+    breakingNews: {
         fontSize: 28,
-        fontWeight: "bold",
-        color: "#2a5d9c",
+        fontWeight: 'bold',
+        color: '#1a1a1a',
+        marginBottom: 20,
     },
-    subtitle: {
-        fontSize: 16,
-        color: "#555",
-    },
-    sectionContainer: {
-        backgroundColor: "#fff",
-        padding: 15,
-        borderRadius: 10,
-        shadowColor: "#000",
+    featuredCard: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        marginBottom: 24,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
-        marginBottom: 15,
+        shadowRadius: 8,
+        elevation: 3,
     },
-    sectionTitle: {
+    featuredImage: {
+        width: '100%',
+        height: 200,
+        borderRadius: 12,
+        marginBottom: 12,
+    },
+    featuredTitle: {
         fontSize: 22,
-        fontWeight: "bold",
-        marginBottom: 5,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        color: '#333',
     },
-    sectionContent: {
+    featuredMeta: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    featuredAuthor: {
+        fontSize: 14,
+        color: '#555',
+        marginRight: 8,
+    },
+    featuredDate: {
+        fontSize: 12,
+        color: '#888',
+    },
+    articleList: {
+        paddingBottom: 16,
+    },
+    articleItem: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 8,
+        elevation: 2,
+    },
+    articleThumbnail: {
+        width: 80,
+        height: 80,
+        borderRadius: 8,
+        marginRight: 12,
+    },
+    articleContent: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    articleTitle: {
         fontSize: 16,
-        color: "#666",
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 6,
     },
-    logo: {
-        position: 'absolute',
-        top: '50%', // Center it vertically
-        left: '50%', // Center it horizontally
-        transform: [{ translateX: -100 }, { translateY: -100 }], // Adjust size of the logo and position
-        opacity: 0.5, // Low opacity for background effect
-        width: 200, // Adjust width as needed
-        height: 200, // Adjust height as needed
+    metaInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    metaDate: {
+        fontSize: 12,
+        color: '#888',
+    },
+    metaDot: {
+        fontSize: 12,
+        marginHorizontal: 4,
+        color: '#888',
+    },
+    metaRead: {
+        fontSize: 12,
+        color: '#888',
+    },
+    articleDescription: {
+        fontSize: 14,
+        color: '#555',
+        marginTop: 8,
+    },
+    loader: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });
+
+export default HomeScreen;
