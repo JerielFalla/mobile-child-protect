@@ -213,5 +213,40 @@ app.post("/chat/token", async (req, res) => {
   res.json({ token });
 });
 
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching users" });
+  }
+});
+
+// ARTICLE SCHEEMA
+const articleSchema = new mongoose.Schema(
+  {
+    title: String,
+    description: String,
+    category: String,
+    thumbnail: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  { timestamps: true }
+);
+
+const Article = mongoose.model("Article", articleSchema);
+
+app.get("/api/articles", async (req, res) => {
+  try {
+    const articles = await Article.find();
+    res.json(articles);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching articles" });
+  }
+});
+
 // Start Server
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
