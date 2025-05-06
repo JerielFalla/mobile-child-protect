@@ -25,6 +25,35 @@ const ReportForm = ({ onSubmit }) => {
         victimName: "",
     });
 
+    // Auto-fill location on mount
+    useLayoutEffect(() => {
+        const fetchLocation = async () => {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== "granted") {
+                console.log("Permission to access location was denied.");
+                return;
+            }
+
+            const location = await Location.getCurrentPositionAsync({});
+            const address = await Location.reverseGeocodeAsync({
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+            });
+
+            if (address && address.length > 0) {
+                const { street, name, city, region, postalCode, country } = address[0];
+                const fullAddress = [name, street, city, region, postalCode, country]
+                    .filter(Boolean)
+                    .join(", ");
+                setFormData(prev => ({ ...prev, location: fullAddress }));
+            }
+        };
+
+        fetchLocation();
+    }, []);
+
+
+
     // Function to reset form data to initial state
     const resetForm = () => {
         setFormData({

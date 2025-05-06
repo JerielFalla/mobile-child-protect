@@ -1,11 +1,25 @@
 {
   "expo": {
-    "name": "frontend",
+    "name": "childguard",
     "slug": "frontend",
     "version": "1.0.0",
+    "icon": "./assets/img/icon.png",
+    "splash": {
+      "image": "./assets/img/newlogo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
     "plugins": ["expo-router"],
     "android": {
       "package": "com.x202110092.frontend"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "084ce638-6584-47c0-8000-296c9de54337"
+      }
     }
   }
 }

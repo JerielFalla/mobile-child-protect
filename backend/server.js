@@ -4,10 +4,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-const multer = require("multer");
-const { GridFsStorage } = require("multer-gridfs-storage");
-const crypto = require("crypto");
-const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -17,6 +13,10 @@ const { StreamChat } = require("stream-chat");
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cors());
+
+app.get("/", (req, res) => {
+  res.send("Backend is running!");
+});
 
 // Connect to MongoDB
 mongoose
@@ -76,6 +76,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String, required: true },
+  role: { type: String, enum: ["admin", "user"], default: "user" },
   avatar: { type: String },
 });
 
@@ -249,4 +250,6 @@ app.get("/api/articles", async (req, res) => {
 });
 
 // Start Server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
+});
