@@ -46,15 +46,6 @@ const Drawer: React.FC<DrawerProps> = ({ isVisible, onClose }) => {
                         <Text style={styles.drawerItemText}>Profile</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.drawerItem}>
-                        <Ionicons name="folder-open" size={24} color="black" />
-                        <Text style={styles.drawerItemText}>Directories</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.drawerItem}>
-                        <Ionicons name="star" size={24} color="black" />
-                        <Text style={styles.drawerItemText}>Premium</Text>
-                    </TouchableOpacity>
 
                     <TouchableOpacity
                         style={styles.drawerItem}
