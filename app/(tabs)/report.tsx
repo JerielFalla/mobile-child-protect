@@ -11,7 +11,7 @@ import {
     Pressable,
     StyleSheet as RNStyleSheet,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
+import { Checkbox } from 'react-native-paper';
 import * as ImagePicker from "expo-image-picker";
 
 /* ───────── NEW – react‑native‑paper for Modal/Portal ───────── */
@@ -23,73 +23,71 @@ import { Portal, Modal, Button } from "react-native-paper";
 const API_URL = "https://childguardbackend.vercel.app";
 
 const abuseLawMap = {
-    Physical: [
+    "Physical Abuse": [
         {
-            title: "RA 7610",
+            title: "RA 7610",
             subtitle:
                 "Special Protection of Children Against Abuse, Exploitation & Discrimination (covers physical abuse)",
         },
     ],
-    Verbal: [
+    "Verbal Abuse": [
         {
-            title: "RA 10627",
+            title: "RA 10627",
             subtitle: "Anti‑Bullying Act (psychological / verbal violence)",
         },
     ],
-    Sexual: [
+    "Sexual Abuse": [
         {
-            title: "RA 7610, §5",
+            title: "RA 7610, §5",
             subtitle: "Child sexual exploitation & abuse",
         },
         {
-            title: "RA 8353",
+            title: "RA 8353",
             subtitle: "Anti‑Rape Law of 1997",
         },
         {
-            title: "RA 11648",
+            title: "RA 11648",
             subtitle: "Strengthened Protection Against Child Sexual Abuse",
         },
     ],
-    Emotional: [
+    "Psychological Abuse": [
         {
-            title: "RA 9262",
+            title: "RA 9262",
             subtitle:
                 "Anti‑Violence Against Women and Their Children Act (psychological violence)",
         },
     ],
-    Neglect: [
+    "Neglect": [
         {
-            title: "RA 7610, §4‑b",
+            title: "RA 7610, §4‑b",
             subtitle: "Neglect provisions",
+        },
+    ],
+    "Cyber Sexual Harassment": [
+        {
+            title: "RA 11930",
+            subtitle: "Anti-Online Sexual Abuse and Exploitation of Children Law",
+        },
+        {
+            title: "RA 9995",
+            subtitle: "Anti-Photo and Video Voyeurism Act",
         },
     ],
 };
 
-/*──────────────── reusable full‑press Picker ────────────────*/
-const FullPressPicker = ({ value, onChange, children, style }) => {
-    const pickerRef = useRef(null);
-    return (
-        <View style={style}>
-            <Picker
-                ref={pickerRef}
-                selectedValue={value}
-                onValueChange={onChange}
-                style={RNStyleSheet.absoluteFill}
-            >
-                {children}
-            </Picker>
-            <Pressable
-                style={RNStyleSheet.absoluteFill}
-                onPress={() => pickerRef.current?.focus()}
-            />
-        </View>
-    );
-};
 
 /*──────────────────────────── Report Form ───────────────────────────*/
 const ReportForm = () => {
     const [step, setStep] = useState(1);
     const [showConfirm, setShowConfirm] = useState(false); // NEW
+    const [abuserAnonymous, setAbuserAnonymous] = useState(false);
+    const [victimAnonymous, setVictimAnonymous] = useState(false);
+    const [showAbuserAgePicker, setShowAbuserAgePicker] = useState(false);
+    const [showRelationshipPicker, setShowRelationshipPicker] = useState(false);
+    const [showNatureOfAbusePicker, setShowNatureOfAbusePicker] = useState(false);
+    const [showVictimAgePicker, setShowVictimAgePicker] = useState(false);
+    const [reporterPhone, setReporterPhone] = useState("");
+
 
     const [formData, setFormData] = useState({
         abuserName: "",
@@ -97,13 +95,14 @@ const ReportForm = () => {
         abuserAge: "",
         relationship: "",
         natureOfAbuse: "",
-        historyOfAbuse: "",
+        descriptionOfIncident: "",
         location: "",
         evidence: [],
         victimAge: "",
         victimGender: "",
-        victimDisability: "",
+        descriptionOfVictim: "",
         victimName: "",
+        reporterPhone: "",
     });
 
     /* ───── Auto‑fill current address (unchanged) ───── */
@@ -146,21 +145,57 @@ const ReportForm = () => {
     const nextStep = () => setStep((s) => s + 1);
     const prevStep = () => setStep((s) => s - 1);
 
+
     /*───── real submit logic (unchanged) ─────*/
     const realSubmit = async () => {
+
+        // Create a copy of formData to modify
+        let submissionData = { ...formData };
+
+        // If abuser is anonymous, set relevant fields to "Unknown"
+        if (abuserAnonymous) {
+            submissionData = {
+                ...submissionData,
+                abuserName: "Unknown",
+                abuserGender: submissionData.abuserGender || "Unknown",
+                abuserAge: submissionData.abuserAge || "Unknown",
+            };
+        }
+
+        // If victim is anonymous, set relevant fields to "Unknown"
+        if (victimAnonymous) {
+            submissionData = {
+                ...submissionData,
+                victimName: "Unknown",
+                victimGender: submissionData.victimGender || "Unknown",
+                victimAge: submissionData.victimAge || "Unknown",
+            };
+        }
+
         const mustFill = [
             "abuserName",
             "abuserGender",
             "abuserAge",
             "relationship",
             "natureOfAbuse",
+            "descriptionOfIncident",
             "location",
             "victimName",
-            "victimAge",
             "victimGender",
+            "descriptionOfVictim",
+            "victimAge",
+            "reporterPhone",
+
         ];
-        if (mustFill.some((f) => !formData[f]?.trim())) {
+        // Check if required fields are filled
+        if (mustFill.some((f) => !submissionData[f]?.trim())) {
             alert("Please fill out all required fields.");
+            return;
+        }
+
+        // Check if reporter phone is filled
+        if (!reporterPhone.trim()) {
+            alert("Please enter your contact number.");
             return;
         }
 
@@ -173,7 +208,7 @@ const ReportForm = () => {
 
             const loc = await Location.getCurrentPositionAsync({});
             const evidenceArr = await Promise.all(
-                formData.evidence.map(async (uri) => ({
+                submissionData.evidence.map(async (uri) => ({
                     filename: uri.split("/").pop(),
                     base64: await FileSystem.readAsStringAsync(uri, {
                         encoding: FileSystem.EncodingType.Base64,
@@ -181,25 +216,42 @@ const ReportForm = () => {
                 }))
             );
 
+
             const body = JSON.stringify({
-                ...formData,
+                ...submissionData,
+                reporterPhone,
+                abuserAnonymous,
+                victimAnonymous,
                 evidence: evidenceArr,
                 latitude: loc.coords.latitude,
                 longitude: loc.coords.longitude,
             });
 
-            await fetch(`${API_URL}/api/reports`, {
+            const response = await fetch(`${API_URL}/api/reports`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body,
             });
 
+            const responseData = await response.json();
+            console.log("Response:", responseData);
+
             alert("Report submitted! Thank you.");
+
+
             setFormData((p) => ({
                 ...p,
                 ...Object.keys(p).reduce((o, k) => ({ ...o, [k]: "" }), {}),
                 evidence: [],
             }));
+
+            // Reset reporter phone
+            setReporterPhone("");
+
+            // Reset checkbox states
+            setAbuserAnonymous(false);
+            setVictimAnonymous(false);
+
             setStep(1);
         } catch (e) {
             console.error(e);
@@ -217,40 +269,56 @@ const ReportForm = () => {
                 {/* STEP 1  (unchanged except picker wrapper already full‑press) */}
                 {step === 1 && (
                     <View>
-                        <Text style={styles.title}>Abuser's Info</Text>
+                        <Text style={styles.title}>Alleged Perpetrator's Info</Text>
+
+                        <Text style={styles.label}>Name</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Full Name (if known)"
+                            placeholder="Enter full name (if known)"
                             value={formData.abuserName}
                             onChangeText={(t) => handleInputChange("abuserName", t)}
                         />
+                        <View style={styles.checkboxContainer}>
+                            <Checkbox
+                                status={abuserAnonymous ? 'checked' : 'unchecked'}
+                                onPress={() => setAbuserAnonymous(!abuserAnonymous)}
+                                color="#2a5d9c"
+                            />
+                            <Text style={styles.checkboxLabel}>Unknown Perpetrator</Text>
+                        </View>
+
+
+
+                        <Text style={styles.label}>Gender</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Gender"
+                            placeholder="Enter gender"
                             value={formData.abuserGender}
                             onChangeText={(t) => handleInputChange("abuserGender", t)}
                         />
-                        <TextInput
+
+
+
+                        <Text style={styles.label}>Age / Estimated Age Range</Text>
+                        <TouchableOpacity
                             style={styles.input}
-                            placeholder="Age / Estimated Age"
-                            keyboardType="numeric"
-                            value={formData.abuserAge}
-                            onChangeText={(t) => handleInputChange("abuserAge", t)}
-                        />
+                            onPress={() => setShowAbuserAgePicker(true)}
+                        >
+                            <Text style={formData.abuserAge ? styles.inputText : styles.placeholderText}>
+                                {formData.abuserAge || "Select age range..."}
+                            </Text>
+                        </TouchableOpacity>
 
                         <Text style={styles.label}>Relationship to Victim</Text>
-                        <FullPressPicker
-                            value={formData.relationship}
-                            onChange={(v) => handleInputChange("relationship", v)}
-                            style={styles.picker}
+                        <TouchableOpacity
+                            style={styles.input}
+                            onPress={() => setShowRelationshipPicker(true)}
                         >
-                            <Picker.Item label="Select…" value="" enabled={false} />
-                            <Picker.Item label="Parent" value="Parent" />
-                            <Picker.Item label="Relative" value="Relative" />
-                            <Picker.Item label="Teacher" value="Teacher" />
-                            <Picker.Item label="Stranger" value="Stranger" />
-                            <Picker.Item label="Unknown" value="Unknown" />
-                        </FullPressPicker>
+                            <Text style={formData.relationship ? styles.inputText : styles.placeholderText}>
+                                {formData.relationship || "Select relationship..."}
+                            </Text>
+                        </TouchableOpacity>
+
 
                         <TouchableOpacity style={styles.button} onPress={nextStep}>
                             <Text style={styles.buttonText}>Next</Text>
@@ -264,34 +332,50 @@ const ReportForm = () => {
                         <Text style={styles.title}>Incident Details</Text>
 
                         <Text style={styles.label}>Nature of Abuse</Text>
-                        <FullPressPicker
-                            value={formData.natureOfAbuse}
-                            onChange={(v) => handleInputChange("natureOfAbuse", v)}
-                            style={styles.picker}
-                        >
-                            <Picker.Item
-                                label="Select nature of abuse…"
-                                value=""
-                                enabled={false}
-                            />
-                            <Picker.Item label="Physical" value="Physical" />
-                            <Picker.Item label="Verbal" value="Verbal" />
-                            <Picker.Item label="Sexual" value="Sexual" />
-                            <Picker.Item label="Emotional" value="Emotional" />
-                            <Picker.Item label="Neglect" value="Neglect" />
-                        </FullPressPicker>
-
-                        <TextInput
+                        <TouchableOpacity
                             style={styles.input}
-                            placeholder="History of Abuse (optional)"
-                            value={formData.historyOfAbuse}
-                            onChangeText={(t) => handleInputChange("historyOfAbuse", t)}
+                            onPress={() => setShowNatureOfAbusePicker(true)}
+                        >
+                            <Text style={formData.natureOfAbuse ? styles.inputText : styles.placeholderText}>
+                                {formData.natureOfAbuse || "Select nature of abuse..."}
+                            </Text>
+                        </TouchableOpacity>
+
+
+                        {/* NEW: Description of Incident */}
+                        <Text style={styles.label}>Description</Text>
+                        <TextInput
+                            style={styles.descriptionInput}
+                            placeholder="Describe the incident"
+                            value={formData.descriptionOfIncident}
+                            onChangeText={(t) => handleInputChange("descriptionOfIncident", t)}
+                            multiline={true}
+                            numberOfLines={4}
+                            textAlignVertical="top"
                         />
+                        <Text style={styles.label}>Location</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Location"
                             value={formData.location}
                             onChangeText={(t) => handleInputChange("location", t)}
+                            multiline={false}
+                            numberOfLines={1}
+                            textAlignVertical="center"
+                        />
+
+                        {/* NEW IMPLEMENTATION: Reporter's Contact Number */}
+                        <Text style={styles.label}>Reporter's Contact Number</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter your contact number (e.g., +63...)"
+                            value={formData.reporterPhone}
+                            onChangeText={(t) => {
+                                handleInputChange("reporterPhone", t);
+                                setReporterPhone(t);
+                            }}
+                            keyboardType="phone-pad"
+                            autoComplete="off"
                         />
 
                         <TouchableOpacity style={styles.button} onPress={pickImage}>
@@ -303,7 +387,7 @@ const ReportForm = () => {
                                 style={styles.navigationButton}
                                 onPress={prevStep}
                             >
-                                <Text style={styles.buttonText}>Back</Text>
+                                <Text style={styles.backbuttonText}>Back</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.submitButton}
@@ -320,40 +404,63 @@ const ReportForm = () => {
                     <View>
                         <Text style={styles.title}>Victim's Info</Text>
 
+
+                        <Text style={styles.label}>Name</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Victim's Name"
+                            placeholder="Enter full name (if known)"
                             value={formData.victimName}
                             onChangeText={(t) => handleInputChange("victimName", t)}
                         />
+                        <View style={styles.checkboxContainer}>
+                            <Checkbox
+                                status={victimAnonymous ? 'checked' : 'unchecked'}
+                                onPress={() => setVictimAnonymous(!victimAnonymous)}
+                                color="#2a5d9c"
+                            />
+                            <Text style={styles.checkboxLabel}>Unknown Victim</Text>
+                        </View>
+
+
+
+                        <Text style={styles.label}>Description</Text>
                         <TextInput
-                            style={styles.input}
-                            placeholder="Age"
-                            keyboardType="numeric"
-                            value={formData.victimAge}
-                            onChangeText={(t) => handleInputChange("victimAge", t)}
+                            style={styles.descriptionInput}
+                            placeholder="Describe the victim"
+                            value={formData.descriptionOfVictim}
+                            onChangeText={(t) => handleInputChange("descriptionOfVictim", t)}
+                            multiline={true}
+                            numberOfLines={4}
+                            textAlignVertical="top"
                         />
+
+
+                        <Text style={styles.label}>Gender</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Gender"
+                            placeholder="Enter gender"
                             value={formData.victimGender}
                             onChangeText={(t) => handleInputChange("victimGender", t)}
                         />
-                        <TextInput
+
+                        <Text style={styles.label}>Estimated Age</Text>
+                        <TouchableOpacity
                             style={styles.input}
-                            placeholder="Disability (if any)"
-                            value={formData.victimDisability}
-                            onChangeText={(t) =>
-                                handleInputChange("victimDisability", t)
-                            }
-                        />
+                            onPress={() => setShowVictimAgePicker(true)}
+                        >
+                            <Text style={formData.victimAge ? styles.inputText : styles.placeholderText}>
+                                {formData.victimAge || "Select or enter age..."}
+                            </Text>
+                        </TouchableOpacity>
+
+
 
                         <View style={styles.navigationButtons}>
                             <TouchableOpacity
                                 style={styles.navigationButton}
                                 onPress={prevStep}
                             >
-                                <Text style={styles.buttonText}>Back</Text>
+                                <Text style={styles.backbuttonText}>Back</Text>
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.submitButton}
@@ -365,6 +472,127 @@ const ReportForm = () => {
                     </View>
                 )}
             </ScrollView>
+
+
+            <Portal>
+                {/* Abuser Age Picker Modal */}
+                <Modal
+                    visible={showAbuserAgePicker}
+                    onDismiss={() => setShowAbuserAgePicker(false)}
+                    contentContainerStyle={styles.pickerModal}
+                >
+                    <Text style={styles.modalHeader}>Select Age Range</Text>
+
+                    <View style={styles.optionsGrid}>
+                        {["Under 18", "18-25", "26-35", "36-45", "46-55", "56-65", "Over 65", "Unknown"].map((option) => (
+                            <TouchableOpacity
+                                key={option}
+                                style={styles.optionButton}
+                                onPress={() => {
+                                    handleInputChange("abuserAge", option);
+                                    setShowAbuserAgePicker(false);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{option}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <Button onPress={() => setShowAbuserAgePicker(false)}>Cancel</Button>
+                </Modal>
+
+                {/* Relationship Picker Modal */}
+                <Modal
+                    visible={showRelationshipPicker}
+                    onDismiss={() => setShowRelationshipPicker(false)}
+                    contentContainerStyle={styles.pickerModal}
+                >
+                    <Text style={styles.modalHeader}>Select Relationship</Text>
+
+                    <View style={styles.optionsList}>
+                        {["Parent", "Relative", "Teacher", "Stranger", "Unknown"].map((option) => (
+                            <TouchableOpacity
+                                key={option}
+                                style={styles.listOption}
+                                onPress={() => {
+                                    handleInputChange("relationship", option);
+                                    setShowRelationshipPicker(false);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{option}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <Button onPress={() => setShowRelationshipPicker(false)}>Cancel</Button>
+                </Modal>
+
+                {/* Nature of Abuse Picker Modal */}
+                <Modal
+                    visible={showNatureOfAbusePicker}
+                    onDismiss={() => setShowNatureOfAbusePicker(false)}
+                    contentContainerStyle={styles.pickerModal}
+                >
+                    <Text style={styles.modalHeader}>Select Nature of Abuse</Text>
+
+                    <View style={styles.optionsList}>
+                        {["Physical Abuse", "Verbal Abuse", "Sexual Abuse", "Psychological Abuse", "Neglect", "Cyber Sexual Harassment"].map((option) => (
+                            <TouchableOpacity
+                                key={option}
+                                style={styles.listOption}
+                                onPress={() => {
+                                    handleInputChange("natureOfAbuse", option);
+                                    setShowNatureOfAbusePicker(false);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{option}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <Button onPress={() => setShowNatureOfAbusePicker(false)}>Cancel</Button>
+                </Modal>
+
+                {/* Victim Age Picker Modal */}
+                <Modal
+                    visible={showVictimAgePicker}
+                    onDismiss={() => setShowVictimAgePicker(false)}
+                    contentContainerStyle={styles.pickerModal}
+                >
+                    <Text style={styles.modalHeader}>Select Age Range</Text>
+
+                    <View style={styles.optionsGrid}>
+                        {["0-5", "6-12", "13-17", "Unknown"].map((option) => (
+                            <TouchableOpacity
+                                key={option}
+                                style={styles.optionButton}
+                                onPress={() => {
+                                    handleInputChange("victimAge", option);
+                                    setShowVictimAgePicker(false);
+                                }}
+                            >
+                                <Text style={styles.optionText}>{option}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <View style={styles.customInputContainer}>
+                        <Text style={styles.customInputLabel}>Or enter specific age:</Text>
+                        <TextInput
+                            style={styles.customInput}
+                            keyboardType="numeric"
+                            value={formData.victimAge.match(/^\d+$/) ? formData.victimAge : ""}
+                            onChangeText={(t) => handleInputChange("victimAge", t)}
+                            placeholder="Enter age"
+                        />
+                    </View>
+
+                    <Button onPress={() => setShowVictimAgePicker(false)}>Done</Button>
+                </Modal>
+            </Portal>
+
+
+
 
             {/*───────── Confirmation Modal ─────────*/}
             <Portal>
@@ -391,14 +619,23 @@ const ReportForm = () => {
                     </Text>
 
                     {/* BULLET LIST */}
-                    {abuseLawMap[formData.natureOfAbuse]?.map(({ title, subtitle }) => (
-                        <View key={title} style={styles.bulletRow}>
+                    {abuseLawMap[formData.natureOfAbuse] ? (
+                        abuseLawMap[formData.natureOfAbuse].map(({ title, subtitle }) => (
+                            <View key={title} style={styles.bulletRow}>
+                                <Text style={styles.bulletDot}>•</Text>
+                                <Text style={styles.bulletText}>
+                                    {title} – {subtitle}
+                                </Text>
+                            </View>
+                        ))
+                    ) : (
+                        <View style={styles.bulletRow}>
                             <Text style={styles.bulletDot}>•</Text>
                             <Text style={styles.bulletText}>
-                                {title} – {subtitle}
+                                No specific laws found for this type of abuse.
                             </Text>
                         </View>
-                    ))}
+                    )}
 
                     <View style={styles.divider} />
 
@@ -449,40 +686,45 @@ const ReportForm = () => {
 /*──────────── styles (existing + NEW modal styles) ───────────*/
 const styles = StyleSheet.create({
     container: { padding: 20, flex: 1, backgroundColor: "#F5F7FA" },
-    title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
+    title: { fontSize: 24, fontWeight: "bold", marginBottom: 25 },
     input: {
         borderWidth: 1,
         borderColor: "#ccc",
         padding: 12,
-        marginBottom: 12,
+        paddingVertical: 12,
+        marginBottom: 20,
         borderRadius: 8,
         backgroundColor: "#fff",
-    },
-    label: { fontSize: 16, marginBottom: 5 },
-    picker: {
-        backgroundColor: "#fff",
-        borderRadius: 8,
-        marginBottom: 12,
         height: 50,
-        justifyContent: "center",
     },
+    label: { fontSize: 14, marginBottom: 5, fontWeight: 500 },
+
     button: {
         backgroundColor: "#2a5d9c",
         padding: 12,
         borderRadius: 8,
         alignItems: "center",
         marginBottom: 10,
+        marginTop: 10,
     },
     buttonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+
     navigationButtons: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginTop: 20,
+        marginTop: 0,
+    },
+    backbuttonText: {
+        color: "#2e2e2e",
+        fontSize: 16,
+        fontWeight: 500,
     },
     navigationButton: {
-        backgroundColor: "#8e8e8e",
+        color: "#2e2e2e",
         padding: 12,
         borderRadius: 8,
+        borderWidth: 1,
+        borderColor: "#2e2e2e",
         width: "48%",
         alignItems: "center",
     },
@@ -531,6 +773,93 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         marginTop: 24,
     },
+    descriptionInput: {
+        borderWidth: 1,
+        borderColor: "#ccc",
+        padding: 12,
+        marginBottom: 10,
+        borderRadius: 8,
+        backgroundColor: "#fff",
+        height: 120,  // Taller height for description
+        textAlignVertical: "top",  // Text starts at the top
+    },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+        marginTop: -20,
+    },
+    checkboxLabel: {
+        marginLeft: 8,
+        fontSize: 14,
+        color: '#555',
+    },
+
+    inputText: {
+        color: '#333',
+        fontSize: 16,
+    },
+    placeholderText: {
+        color: '#999',
+        fontSize: 16,
+    },
+
+
+    modalButtons: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+
+    pickerModal: {
+        backgroundColor: 'white',
+        padding: 20,
+        margin: 20,
+        borderRadius: 8,
+    },
+    optionsGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    optionButton: {
+        backgroundColor: '#f0f0f0',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 10,
+        width: '48%',
+        alignItems: 'center',
+    },
+    optionsList: {
+        marginBottom: 20,
+    },
+    listOption: {
+        backgroundColor: '#f0f0f0',
+        padding: 14,
+        borderRadius: 8,
+        marginBottom: 8,
+        width: '100%',
+    },
+    optionText: {
+        fontSize: 16,
+        color: '#333',
+    },
+    customInputContainer: {
+        marginBottom: 20,
+    },
+    customInputLabel: {
+        fontSize: 14,
+        marginBottom: 8,
+        color: '#555',
+    },
+    customInput: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 12,
+        borderRadius: 8,
+        backgroundColor: '#fff',
+    },
+
 });
 
 export default ReportForm;
