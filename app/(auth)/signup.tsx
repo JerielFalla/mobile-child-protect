@@ -4,8 +4,9 @@ import { Button, Input } from "@rneui/themed";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import * as FileSystem from "expo-file-system";
 
-const API_URL = "https://childguardbackend.vercel.app";
+const API_URL = "https://childguardbackend.vercel.app/";
 
 export default function Auth() {
     const router = useRouter();
@@ -13,8 +14,9 @@ export default function Auth() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [phone, setPhone] = useState("");
-    const [validID, setValidID] = useState<string | null>(null);
+    const [validId, setValidID] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
+    const [selfie, setSelfie] = useState<string | null>(null);
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -30,8 +32,23 @@ export default function Auth() {
 
     const removeImage = () => setValidID(null);
 
+
+    const takeSelfie = async () => {
+        let result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.6,
+        });
+
+        if (!result.canceled) {
+            setSelfie(result.assets[0].uri);
+        }
+    };
+
+    const removeSelfie = () => setSelfie(null);
+
     const handleSignup = async () => {
-        if (!email || !password || !validID) {
+        if (!name || !email || !password || !validId || !selfie || !phone) {
             Alert.alert("Error", "Please fill in all fields and upload a valid ID");
             return;
         }
@@ -39,23 +56,30 @@ export default function Auth() {
         setLoading(true);
 
         try {
-            const formData = new FormData();
-            formData.append("name", name);
-            formData.append("email", email);
-            formData.append("password", password);
-            formData.append("phone", phone);
-            formData.append("validId", {
-                uri: validID,
-                name: "valid-id.jpg",
-                type: "image/jpeg",
+            // Convert image to base64
+            const base64Image = await FileSystem.readAsStringAsync(validId, {
+                encoding: FileSystem.EncodingType.Base64,
             });
+
+            const base64Selfie = await FileSystem.readAsStringAsync(selfie, {
+                encoding: FileSystem.EncodingType.Base64,
+            });
+
+            const userData = {
+                name,
+                email,
+                password,
+                phone,
+                validId: base64Image,
+                selfie: base64Selfie,
+            };
 
             const response = await fetch(`${API_URL}/signup`, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "multipart/form-data",
+                    "Content-Type": "application/json",
                 },
-                body: formData,
+                body: JSON.stringify(userData),
             });
 
             const data = await response.json();
@@ -130,11 +154,11 @@ export default function Auth() {
 
                     {/* Attachment-style valid ID picker */}
                     <TouchableOpacity
-                        style={[styles.attachmentBox, validID && styles.attachmentBoxActive]}
-                        onPress={validID ? undefined : pickImage}
-                        activeOpacity={validID ? 1 : 0.7}
+                        style={[styles.attachmentBox, validId && styles.attachmentBoxActive]}
+                        onPress={validId ? undefined : pickImage}
+                        activeOpacity={validId ? 1 : 0.7}
                     >
-                        {validID ? (
+                        {validId ? (
                             <View style={styles.attachmentContent}>
                                 <Text style={styles.attachmentText}>✅ Valid ID attached</Text>
                                 <TouchableOpacity onPress={removeImage} style={styles.removeBtn}>
@@ -143,6 +167,24 @@ export default function Auth() {
                             </View>
                         ) : (
                             <Text style={styles.attachmentPlaceholder}>📎 Attach Valid ID</Text>
+                        )}
+                    </TouchableOpacity>
+
+
+                    <TouchableOpacity
+                        style={[styles.attachmentBox, selfie && styles.attachmentBoxActive]}
+                        onPress={selfie ? undefined : takeSelfie}
+                        activeOpacity={selfie ? 1 : 0.7}
+                    >
+                        {selfie ? (
+                            <View style={styles.attachmentContent}>
+                                <Text style={styles.attachmentText}>📸 Take a Selfie with your valid ID</Text>
+                                <TouchableOpacity onPress={removeSelfie} style={styles.removeBtn}>
+                                    <Text style={styles.removeBtnText}>✕ Remove</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <Text style={styles.attachmentPlaceholder}>📷 Take a Selfie</Text>
                         )}
                     </TouchableOpacity>
 
