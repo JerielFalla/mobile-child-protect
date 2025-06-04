@@ -8,9 +8,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": ["expo-router"],
     "android": {
       "package": "com.x202110092.frontend"
     },
