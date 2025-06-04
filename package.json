@@ -44,6 +44,7 @@
     "react-native-svg": "15.8.0",
     "stream-chat": "^8.59.0",
     "stream-chat-expo": "^6.7.2",
+    "stream-chat-react-native": "^7.1.1",
     "stream-chat-react-native-core": "^6.7.2"
   },
   "devDependencies": {

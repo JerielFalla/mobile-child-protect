@@ -1,35 +1,51 @@
-import { useEffect, useState } from 'react';
-import { FlatList, TouchableOpacity, Text, ActivityIndicator, View } from 'react-native';
-import { useChatContext } from 'stream-chat-expo';
+import { useState } from 'react';
+import {
+    FlatList,
+    TouchableOpacity,
+    Text,
+    ActivityIndicator,
+    View,
+    TextInput,
+} from 'react-native';
+import { Avatar, useChatContext } from 'stream-chat-expo';
 import { useRouter } from 'expo-router';
 
 export default function UserListScreen() {
     const [users, setUsers] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(false);
     const { client } = useChatContext();
     const router = useRouter();
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            if (!client.user?.id) return; // 💡 don't run unless user is ready
+    const fetchUsers = async (searchText: string) => {
+        if (!client.user?.id) return;
 
-            try {
-                const currentUserId = client.user.id;
-                const response = await client.queryUsers(
-                    { id: { $ne: currentUserId } },
-                    { id: 1 },
-                    { limit: 20 }
-                );
-                setUsers(response.users);
-            } catch (e) {
-                console.error('Error fetching users:', e);
-            } finally {
-                setLoading(false);
-            }
-        };
+        setLoading(true);
+        try {
+            const response = await client.queryUsers(
+                {
+                    id: { $ne: client.user.id },
+                    name: { $autocomplete: searchText },
+                },
+                { id: 1 },
+                { limit: 20 }
+            );
+            setUsers(response.users);
+        } catch (e) {
+            console.error('Error fetching users:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchUsers();
-    }, [client.user?.id]); // ✅ wait for user to exist
+    const onSearchChange = (text: string) => {
+        setSearch(text);
+        if (text.trim().length > 0) {
+            fetchUsers(text.trim());
+        } else {
+            setUsers([]); // Clear results
+        }
+    };
 
     const startChat = async (user: any) => {
         const members = [client.user!.id, user.id];
@@ -41,33 +57,90 @@ export default function UserListScreen() {
 
         await channel.watch();
 
-        router.push({
+        // 👇 Use replace so back goes to /chats instead of /userlist
+        router.replace({
             pathname: '/channel',
             params: { id: channel.id },
         });
     };
 
-    if (!client.user?.id) {
-        return (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <ActivityIndicator size="large" />
-            </View>
-        );
-    }
-
-
     return (
-        <FlatList
-            data={users}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-                <TouchableOpacity
-                    onPress={() => startChat(item)}
-                    style={{ padding: 16, borderBottomWidth: 1, borderColor: '#eee' }}
-                >
-                    <Text>{item.name || item.id}</Text>
-                </TouchableOpacity>
+        <View style={{ flex: 1, padding: 16 }}>
+            <TextInput
+                placeholder="Search users by name..."
+                value={search}
+                onChangeText={onSearchChange}
+                style={{
+                    height: 40,
+                    borderColor: '#ccc',
+                    borderWidth: 1,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    marginBottom: 12,
+                }}
+            />
+
+            {loading && (
+                <ActivityIndicator size="large" style={{ marginTop: 20 }} />
             )}
-        />
+
+            {!loading && search.trim().length === 0 && (
+                <Text
+                    style={{
+                        justifyContent: 'center',
+                        alignSelf: 'center',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                        marginTop: 250,
+                        fontSize: 16,
+                        color: '#888',
+                    }}
+                >
+                    Search to start conversation
+                </Text>
+            )}
+
+            <FlatList
+                data={users}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <TouchableOpacity
+                        onPress={() => startChat(item)}
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: 12,
+                            borderBottomWidth: 1,
+                            borderColor: '#eee',
+                        }}
+                    >
+                        <Avatar
+                            image={item.image}
+                            name={item.name || item.id}
+                            size={40}
+                        />
+                        <Text style={{ marginLeft: 12, fontSize: 16 }}>
+                            {item.name || item.id}
+                        </Text>
+                    </TouchableOpacity>
+                )}
+                ListEmptyComponent={
+                    !loading &&
+                        search.trim().length > 0 &&
+                        users.length === 0 ? (
+                        <Text
+                            style={{
+                                textAlign: 'center',
+                                marginTop: 20,
+                                fontSize: 16,
+                                color: '#888',
+                            }}
+                        >
+                            No users found.
+                        </Text>
+                    ) : null
+                }
+            />
+        </View>
     );
 }

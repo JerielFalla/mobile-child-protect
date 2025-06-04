@@ -35,6 +35,7 @@ export default function ChatsScreen() {
                 filters={{ type: 'messaging', members: { $in: [client.user?.id || ''] } }}
                 sort={{ last_message_at: -1 }}
                 onSelect={handleChannelPress}
+
             />
         </View>
     );

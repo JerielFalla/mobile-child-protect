@@ -31,7 +31,9 @@ const ChannelScreen = () => {
     return (
         <Channel channel={channel}>
             <View style={{ flex: 1 }}>
-                <MessageList />
+                <MessageList
+
+                />
                 <MessageInput />
             </View>
         </Channel>
