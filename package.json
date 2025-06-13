@@ -57,6 +57,9 @@
     "stream-chat-react-native-core": "^6.7.2",
     "undefined": "firebase/auth/react-native"
   },
+  "overrides": {
+    "expo-image-loader": "npm:expo@52.0.46"
+  },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~18.3.12",
