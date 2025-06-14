@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "6362311742",
+    "project_id": "childguard-108ed",
+    "storage_bucket": "childguard-108ed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:6362311742:android:32b411e9328d90f6cf756f",
+        "android_client_info": {
+          "package_name": "com.jeriel0312.childguard"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDmioy8XoBoODsY1xZYpBhm87nd7zpRTWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
