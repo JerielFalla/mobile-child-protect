@@ -1,7 +1,16 @@
 import React, { useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, FlatList, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  Dimensions,
+  FlatList,
+  TouchableOpacity,
+  Animated,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { setHasSeenOnboarding } from '../lib/storage';
+import { setItem } from '../utils/asyncStorage';
 
 const { width, height } = Dimensions.get('window');
 
@@ -38,16 +47,12 @@ const slides = [
 
 export default function Onboarding() {
   const router = useRouter();
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const scrollX = useRef(new Animated.Value(0)).current;
   const flatListRef = useRef<FlatList>(null);
-
-  const handleDone = async () => {
-    await setHasSeenOnboarding();
-    router.replace('/(auth)/login');
-  };
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleSignup = async () => {
-    await setHasSeenOnboarding();
+    await setItem('onboarded', '1');
     router.replace('/(auth)/signup');
   };
 
@@ -61,17 +66,74 @@ export default function Onboarding() {
     viewAreaCoveragePercentThreshold: 50,
   }).current;
 
-  const renderItem = ({ item }: any) => (
-    <View style={[styles.slide, { backgroundColor: item.backgroundColor }]}>
-      <Image source={item.image} style={styles.image} resizeMode="contain" />
-      <Text style={styles.title}>{item.title}</Text>
-      <Text style={styles.text}>{item.text}</Text>
-    </View>
-  );
+  const renderItem = ({ item, index }: any) => {
+    const inputRange = [
+      (index - 1) * width,
+      index * width,
+      (index + 1) * width,
+    ];
+
+    const opacity = scrollX.interpolate({
+      inputRange,
+      outputRange: [0, 1, 0],
+      extrapolate: 'clamp',
+    });
+
+    const translateY = scrollX.interpolate({
+      inputRange,
+      outputRange: [50, 0, -50],
+      extrapolate: 'clamp',
+    });
+
+    return (
+      <View style={[styles.slide, { backgroundColor: item.backgroundColor }]}>
+        <Animated.Image
+          source={item.image}
+          style={[styles.image, { opacity, transform: [{ translateY }] }]}
+          resizeMode="contain"
+        />
+        <Animated.Text style={[styles.title, { opacity, transform: [{ translateY }] }]}>
+          {item.title}
+        </Animated.Text>
+        <Animated.Text style={[styles.text, { opacity, transform: [{ translateY }] }]}>
+          {item.text}
+        </Animated.Text>
+
+        {/* Pagination */}
+        <View style={styles.paginationContainer}>
+          <View style={styles.pagination}>
+            {slides.map((_, i) => {
+              const scale = scrollX.interpolate({
+                inputRange: [(i - 1) * width, i * width, (i + 1) * width],
+                outputRange: [0.8, 1.4, 0.8],
+                extrapolate: 'clamp',
+              });
+
+              return (
+                <Animated.View
+                  key={i}
+                  style={[
+                    styles.dot,
+                    { transform: [{ scale }], backgroundColor: currentIndex === i ? '#21285c' : '#ccc' },
+                  ]}
+                />
+              );
+            })}
+          </View>
+
+          {currentIndex === slides.length - 1 && (
+            <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
+              <Text style={styles.signupButtonText}>Sign Up</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    );
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: slides[currentIndex].backgroundColor }]}>
-      <FlatList
+    <View style={styles.container}>
+      <Animated.FlatList
         data={slides}
         renderItem={renderItem}
         horizontal
@@ -81,27 +143,12 @@ export default function Onboarding() {
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={viewabilityConfig}
         ref={flatListRef}
-      />
-
-      <View style={styles.footer}>
-        <View style={styles.pagination}>
-          {slides.map((_, i) => (
-            <View
-              key={i}
-              style={[
-                styles.dot,
-                currentIndex === i ? styles.activeDot : styles.inactiveDot,
-              ]}
-            />
-          ))}
-        </View>
-
-        {currentIndex === slides.length - 1 && (
-          <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-            <Text style={styles.signupButtonText}>Sign Up</Text>
-          </TouchableOpacity>
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+          { useNativeDriver: true }
         )}
-      </View>
+        scrollEventThrottle={16}
+      />
     </View>
   );
 }
@@ -118,11 +165,20 @@ const styles = StyleSheet.create({
   image: { width: width * 0.8, height: height * 0.4 },
   title: { fontSize: 28, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
   text: { fontSize: 16, textAlign: 'center', marginVertical: 10 },
-  footer: { alignItems: 'center', justifyContent: 'center', paddingBottom: 40 },
+
+  paginationContainer: {
+    position: 'absolute',
+    bottom: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   pagination: { flexDirection: 'row', marginBottom: 20 },
-  dot: { width: 10, height: 10, borderRadius: 5, marginHorizontal: 5 },
-  activeDot: { backgroundColor: '#21285c' },
-  inactiveDot: { backgroundColor: '#ccc' },
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
   signupButton: {
     backgroundColor: '#21285c',
     paddingVertical: 15,

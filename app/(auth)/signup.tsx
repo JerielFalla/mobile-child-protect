@@ -6,6 +6,12 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import * as FileSystem from "expo-file-system";
 import Checkbox from "expo-checkbox";
+import { Dimensions, PixelRatio } from "react-native";
+const { width, height } = Dimensions.get("window");
+// Scale font size
+const scaleFont = (size) => size * (width / 375);  // 375 is reference width (iPhone 11 width)
+// Scale other sizes (padding, margin, etc)
+const scaleSize = (size) => size * (width / 375);
 
 const API_URL = "https://childguardbackend.vercel.app/";
 
@@ -187,8 +193,8 @@ export default function Auth() {
 
                     <View style={styles.termsContainer}>
                         <Checkbox
-                            status={agreed ? 'checked' : 'unchecked'}
-                            onPress={() => setAgreed(!agreed)}
+                            value={agreed}
+                            onValueChange={setAgreed}
                         />
                         <Text style={styles.termsText}>
                             I agree to the{' '}
@@ -290,67 +296,67 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#F5F7FA",
-        paddingHorizontal: 24,
-        paddingVertical: 24,
+        paddingHorizontal: scaleSize(24),
+        paddingVertical: scaleSize(24),
     },
     // Removed logo style
 
     title: {
-        fontSize: 36,
+        fontSize: scaleFont(36),
         fontWeight: "600",
-        marginBottom: 16,
+        marginBottom: scaleSize(16),
         textAlign: 'center',
-        marginLeft: 8,
+        marginLeft: scaleSize(8),
         color: "#2e2e2e",
     },
     form: {
         width: "100%",
     },
     label: {
-        fontSize: 16,
+        fontSize: scaleFont(16),
         fontWeight: "600",
-        marginBottom: 2,
+        marginBottom: scaleSize(2),
         color: "#2e2e2e",
     },
     inputContainer: {
-        paddingHorizontal: 8,
+        paddingHorizontal: scaleSize(8),
         borderBottomWidth: 1,
         borderBottomColor: "#ccc",
     },
     inputText: {
-        fontSize: 16,
-        paddingVertical: 4,
-        paddingHorizontal: 4,
+        fontSize: scaleFont(16),
+        paddingVertical: scaleSize(4),
+        paddingHorizontal: scaleSize(4),
     },
     signUpButton: {
         backgroundColor: "#21285c",
-        borderRadius: 10,
-        paddingVertical: 12,
-        marginTop: 16,
+        borderRadius: scaleSize(10),
+        paddingVertical: scaleSize(12),
+        marginTop: scaleSize(16),
     },
     footer: {
         flexDirection: "row",
-        marginTop: 16,
+        marginTop: scaleSize(16),
         justifyContent: "center",
     },
     footerText: {
-        fontSize: 16,
+        fontSize: scaleFont(16),
         color: "#333",
     },
     footerLink: {
-        fontSize: 16,
+        fontSize: scaleFont(16),
         color: "#2a5d9c",
-        marginLeft: 6,
+        marginLeft: scaleSize(6),
         fontWeight: "600",
     },
     attachmentBox: {
         borderWidth: 1,
         borderColor: "#aaa",
         borderStyle: "dashed",
-        borderRadius: 10,
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        marginBottom: 12,
+        borderRadius: scaleSize(10),
+        paddingVertical: scaleSize(12),
+        paddingHorizontal: scaleSize(14),
+        marginBottom: scaleSize(12),
         justifyContent: "center",
         alignItems: "center",
     },
@@ -359,7 +365,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#e6f5ea",
     },
     attachmentPlaceholder: {
-        fontSize: 15,
+        fontSize: scaleFont(15),
         color: "#888",
     },
     attachmentContent: {
@@ -370,7 +376,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
     },
     attachmentText: {
-        fontSize: 15,
+        fontSize: scaleFont(15),
         color: "#3CB371",
         fontWeight: "600",
     },
@@ -378,17 +384,17 @@ const styles = StyleSheet.create({
         padding: 6,
     },
     removeBtnText: {
-        fontSize: 14,
+        fontSize: scaleFont(14),
         color: "#d9534f",
         fontWeight: "600",
     },
     termsContainer: { flexDirection: "row", alignItems: "center", marginVertical: 0 },
-    termsText: { marginLeft: 8, fontSize: 14, color: "#333" },
+    termsText: { marginLeft: scaleSize(8), fontSize: scaleFont(14), color: "#333" },
     termsLink: { color: "#2a5d9c", fontWeight: "bold" },
     modalContainer: { flex: 1, padding: 16, backgroundColor: "#fff" },
     modalContent: { flex: 1 },
-    modalTitle: { fontSize: 24, fontWeight: "bold", marginBottom: 12 },
-    modalText: { fontSize: 16, lineHeight: 22 },
-    closeButton: { backgroundColor: "#21285c", padding: 14, borderRadius: 8, marginTop: 20 },
+    modalTitle: { fontSize: scaleFont(24), fontWeight: "bold", marginBottom: scaleSize(12) },
+    modalText: { fontSize: scaleFont(16), lineHeight: scaleSize(22) },
+    closeButton: { backgroundColor: "#21285c", padding: scaleSize(14), borderRadius: scaleSize(8), marginTop: scaleSize(20) },
     closeButtonText: { color: "#fff", textAlign: "center", fontWeight: "600" }
 });
