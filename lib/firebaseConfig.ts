@@ -1,8 +1,8 @@
 // lib/firebaseConfig.ts
 import "react-native-get-random-values";
 // lib/firebaseConfig.ts
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { initializeApp } from "@firebase/app";
+import { getAuth } from "@firebase/auth";
 
 // Your Firebase config
 export const firebaseConfig = {
