@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import { StyleSheet, View, Image, Text, Alert } from "react-native";
+import { StyleSheet, View, Image, Text, Alert, TouchableOpacity } from "react-native";
 import { Button, Input } from "@rneui/themed";
 import { GestureHandlerRootView, Pressable } from "react-native-gesture-handler";
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -99,6 +99,11 @@ export default function Auth() {
                                 <Text style={styles.signupLink}>Signup here.</Text>
                             </Pressable>
                         </View>
+                        <TouchableOpacity onPress={() => router.push("/forgot")}>
+                            <Text style={{ color: "blue", textAlign: "center", marginTop: 12 }}>
+                                Forgot Password?
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
             </View>
