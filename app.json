@@ -8,6 +8,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "scheme": "childguard",
     "plugins": [
       "expo-router",
       "expo-build-properties",

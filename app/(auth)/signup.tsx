@@ -6,14 +6,9 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import * as FileSystem from "expo-file-system";
 import Checkbox from "expo-checkbox";
-import { Dimensions, PixelRatio } from "react-native";
-const { width, height } = Dimensions.get("window");
-// Scale font size
-const scaleFont = (size) => size * (width / 375);  // 375 is reference width (iPhone 11 width)
-// Scale other sizes (padding, margin, etc)
-const scaleSize = (size) => size * (width / 375);
+import axios from "axios";
 
-const API_URL = "https://childguardbackend.vercel.app/";
+const API_URL = "https://childguardbackend.vercel.app"; // REMOVE extra slash!
 
 export default function Auth() {
     const router = useRouter();
@@ -33,7 +28,6 @@ export default function Auth() {
             allowsEditing: true,
             quality: 0.6,
         });
-
         if (!result.canceled) {
             setValidID(result.assets[0].uri);
         }
@@ -41,22 +35,18 @@ export default function Auth() {
 
     const removeImage = () => setValidID(null);
 
-
     const takeSelfie = async () => {
         let result = await ImagePicker.launchCameraAsync({
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.6,
         });
-
         if (!result.canceled) {
             setSelfie(result.assets[0].uri);
         }
     };
 
     const removeSelfie = () => setSelfie(null);
-
-
 
     const handleSignup = async () => {
         if (!name || !email || !password || !validId || !selfie || !phone) {
@@ -78,20 +68,24 @@ export default function Auth() {
                 encoding: FileSystem.EncodingType.Base64,
             });
 
-            // Navigate to OTP screen with all data
-            router.push({
-                pathname: "/otp",
-                params: {
-                    name,
-                    email,
-                    password,
-                    phone,
-                    validId: base64ID,
-                    selfie: base64Selfie,
-                },
-            });
+            const payload = {
+                name,
+                email,
+                password,
+                phone,
+                validId: base64ID,
+                selfie: base64Selfie,
+            };
+
+            const res = await axios.post(`${API_URL}/signup`, payload);
+
+            if (res.status === 201) {
+                Alert.alert("Success", "Signup successful! Your account is pending approval.");
+                router.replace("/login");
+            }
         } catch (error: any) {
-            Alert.alert("Error", error.message);
+            console.log("Signup error:", error.response?.data || error.message);
+            Alert.alert("Error", error.response?.data?.error || "Signup failed.");
         } finally {
             setLoading(false);
         }
@@ -100,67 +94,32 @@ export default function Auth() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <View style={styles.container}>
-                {/* Removed logo */}
-
                 <Text style={styles.title}>Signup</Text>
-
                 <View style={styles.form}>
-                    <Input
-                        label="Name"
-                        leftIcon={{ type: "font-awesome", name: "user", size: 22 }}
-                        onChangeText={setName}
-                        value={name}
-                        placeholder="Enter your full name"
-                        autoCapitalize="none"
-                        labelStyle={styles.label}
-                        inputContainerStyle={styles.inputContainer}
-                        inputStyle={styles.inputText}
-                    />
-                    <Input
-                        label="Email"
-                        leftIcon={{ type: "font-awesome", name: "envelope", size: 22 }}
-                        onChangeText={setEmail}
-                        value={email}
-                        placeholder="Enter your email"
-                        autoCapitalize="none"
-                        labelStyle={styles.label}
-                        inputContainerStyle={styles.inputContainer}
-                        inputStyle={styles.inputText}
-                    />
-                    <Input
-                        label="Password"
-                        leftIcon={{ type: "font-awesome", name: "lock", size: 22 }}
-                        onChangeText={setPassword}
-                        value={password}
-                        secureTextEntry
-                        placeholder="Enter your password"
-                        autoCapitalize="none"
-                        labelStyle={styles.label}
-                        inputContainerStyle={styles.inputContainer}
-                        inputStyle={styles.inputText}
-                    />
-                    <Input
-                        label="Phone Number"
-                        leftIcon={{ type: "font-awesome", name: "phone", size: 22 }}
+                    <Input label="Name" leftIcon={{ type: "font-awesome", name: "user", size: 22 }}
+                        onChangeText={setName} value={name} placeholder="Enter your full name"
+                        autoCapitalize="none" labelStyle={styles.label}
+                        inputContainerStyle={styles.inputContainer} inputStyle={styles.inputText} />
+                    <Input label="Email" leftIcon={{ type: "font-awesome", name: "envelope", size: 22 }}
+                        onChangeText={setEmail} value={email} placeholder="Enter your email"
+                        autoCapitalize="none" labelStyle={styles.label}
+                        inputContainerStyle={styles.inputContainer} inputStyle={styles.inputText} />
+                    <Input label="Password" leftIcon={{ type: "font-awesome", name: "lock", size: 22 }}
+                        onChangeText={setPassword} value={password} secureTextEntry placeholder="Enter your password"
+                        autoCapitalize="none" labelStyle={styles.label}
+                        inputContainerStyle={styles.inputContainer} inputStyle={styles.inputText} />
+                    <Input label="Phone Number" leftIcon={{ type: "font-awesome", name: "phone", size: 22 }}
                         onChangeText={(text) => {
-                            // Remove any non-digit characters and limit to 11 digits
                             const cleaned = text.replace(/[^0-9]/g, '').slice(0, 11);
                             setPhone(cleaned);
                         }}
-                        value={phone}
-                        placeholder="Enter your phone number"
-                        autoCapitalize="none"
-                        labelStyle={styles.label}
-                        inputContainerStyle={styles.inputContainer}
-                        inputStyle={styles.inputText}
-                    />
+                        value={phone} placeholder="Enter your phone number"
+                        autoCapitalize="none" labelStyle={styles.label}
+                        inputContainerStyle={styles.inputContainer} inputStyle={styles.inputText} />
 
-                    {/* Attachment-style valid ID picker */}
-                    <TouchableOpacity
-                        style={[styles.attachmentBox, validId && styles.attachmentBoxActive]}
-                        onPress={validId ? undefined : pickImage}
-                        activeOpacity={validId ? 1 : 0.7}
-                    >
+                    {/* Valid ID Picker */}
+                    <TouchableOpacity style={[styles.attachmentBox, validId && styles.attachmentBoxActive]}
+                        onPress={validId ? undefined : pickImage} activeOpacity={validId ? 1 : 0.7}>
                         {validId ? (
                             <View style={styles.attachmentContent}>
                                 <Text style={styles.attachmentText}>✅ Valid ID attached</Text>
@@ -173,15 +132,12 @@ export default function Auth() {
                         )}
                     </TouchableOpacity>
 
-
-                    <TouchableOpacity
-                        style={[styles.attachmentBox, selfie && styles.attachmentBoxActive]}
-                        onPress={selfie ? undefined : takeSelfie}
-                        activeOpacity={selfie ? 1 : 0.7}
-                    >
+                    {/* Selfie Picker */}
+                    <TouchableOpacity style={[styles.attachmentBox, selfie && styles.attachmentBoxActive]}
+                        onPress={selfie ? undefined : takeSelfie} activeOpacity={selfie ? 1 : 0.7}>
                         {selfie ? (
                             <View style={styles.attachmentContent}>
-                                <Text style={styles.attachmentText}>📸 Take a Selfie with your valid ID</Text>
+                                <Text style={styles.attachmentText}>📸 Selfie attached</Text>
                                 <TouchableOpacity onPress={removeSelfie} style={styles.removeBtn}>
                                     <Text style={styles.removeBtnText}>✕ Remove</Text>
                                 </TouchableOpacity>
@@ -191,27 +147,17 @@ export default function Auth() {
                         )}
                     </TouchableOpacity>
 
+                    {/* Terms */}
                     <View style={styles.termsContainer}>
-                        <Checkbox
-                            value={agreed}
-                            onValueChange={setAgreed}
-                        />
-                        <Text style={styles.termsText}>
-                            I agree to the{' '}
-                            <Text style={styles.termsLink} onPress={() => setShowTerms(true)}>
-                                Terms and Conditions
+                        <Checkbox value={agreed} onValueChange={setAgreed} />
+                        <TouchableOpacity onPress={() => setShowTerms(true)}>
+                            <Text style={[styles.termsText, styles.termsLink]}>
+                                I agree to the Terms and Conditions
                             </Text>
-                        </Text>
+                        </TouchableOpacity>
                     </View>
 
-                    {/* Removed Change Valid ID button */}
-
-                    <Button
-                        title="Sign up"
-                        buttonStyle={styles.signUpButton}
-                        onPress={handleSignup}
-                        loading={loading}
-                    />
+                    <Button title="Sign up" buttonStyle={styles.signUpButton} onPress={handleSignup} loading={loading} />
                 </View>
 
                 <View style={styles.footer}>
@@ -220,181 +166,92 @@ export default function Auth() {
                         <Text style={styles.footerLink}>Sign in here.</Text>
                     </TouchableOpacity>
                 </View>
-                {/* Terms Modal */}
-                <Modal visible={showTerms} animationType="slide" onRequestClose={() => setShowTerms(false)}>
-                    <View style={styles.modalContainer}>
-                        <ScrollView style={styles.modalContent}>
-                            <Text style={styles.modalTitle}>Terms and Conditions</Text>
-                            <Text style={styles.modalText}>
-
-                                1. Agreement to Terms
-                                {"\n\n"}By using the ChildGuard mobile application, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use this application.
-
-                                {"\n\n"}2. User Responsibilities
-                                {"\n"}- Provide accurate and truthful information, including valid IDs and selfies.
-                                {"\n"}- Ensure that your account credentials are kept secure and confidential.
-                                {"\n"}- Refrain from using the application for unlawful or unauthorized purposes.
-
-                                {"\n\n"}3. Prohibited Activities
-                                {"\n"}- Submitting false reports or abuse claims.
-                                {"\n"}- Attempting to breach the security features of the application.
-                                {"\n"}- Misusing the educational resources or sharing them without proper acknowledgment.
-
-                                {"\n\n"}4. Suspension or Termination of Use
-                                {"\n"}ChildGuard reserves the right to suspend or terminate user access to the application at any time if these Terms are violated.
-
-                                {"\n\n"}5. Modifications to Terms
-                                {"\n"}ChildGuard may revise these Terms periodically. Continued use of the app constitutes acceptance of the updated Terms.
-
-                                {"\n\n"}Privacy Policy
-
-                                {"\n\n"}1. Data Collection
-                                {"\n"}We collect the following data for verification and functionality purposes:
-                                - Personal details, including name, email, and phone number.
-                                - Valid government-issued ID and selfie for user verification.
-                                - Usage data to improve the application and provide personalized experiences.
-
-                                {"\n\n"}2. Use of Information
-                                {"\n"}Your data will be used to:
-                                - Verify user identity to prevent fraudulent accounts.
-                                - Process reports and ensure case management integrity.
-                                - Improve user experience and develop new features.
-
-                                {"\n\n"}3. Data Sharing
-                                {"\n"}ChildGuard will not share your personal information with third parties except in the following cases:
-                                - Legal requirements or court orders.
-                                - Cases requiring law enforcement intervention.
-                                - User authorization for specific sharing.
-
-                                {"\n\n"}4. Data Security
-                                {"\n"}ChildGuard implements strict security measures to protect your personal data, including encryption, secure storage, and regular audits.
-
-                                {"\n\n"}5. Your Rights
-                                {"\n"}Users have the right to:
-                                - Access and review their data.
-                                - Request data deletion or correction.
-                                - Withdraw consent for data usage (note: this may limit app functionality).
-
-                                {"\n\n"}6. Contact Information
-                                {"\n"}If you have questions about our Privacy Policy, please contact us at support@childguard.com.
-
-                            </Text>
-                        </ScrollView>
-                        <TouchableOpacity style={styles.closeButton} onPress={() => setShowTerms(false)}>
-                            <Text style={styles.closeButtonText}>Close</Text>
-                        </TouchableOpacity>
-                    </View>
-                </Modal>
             </View>
+
+            {/* Modal */}
+            <Modal visible={showTerms} animationType="slide" transparent={true}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalWrapper}>
+                        <ScrollView contentContainerStyle={styles.modalContent}>
+                            <Text style={styles.modalTitle}>Terms and Conditions</Text>
+
+                            <Text style={styles.modalSectionTitle}>1. Agreement to Terms</Text>
+                            <Text style={styles.modalText}>By using the ChildGuard mobile application, you agree to be bound by these Terms and Conditions. If you do not agree, please do not use this application.</Text>
+
+                            <Text style={styles.modalSectionTitle}>2. User Responsibilities</Text>
+                            <Text style={styles.modalText}>- Provide accurate and truthful information, including valid IDs and selfies.</Text>
+                            <Text style={styles.modalText}>- Ensure that your account credentials are kept secure and confidential.</Text>
+                            <Text style={styles.modalText}>- Refrain from using the application for unlawful or unauthorized purposes.</Text>
+
+                            <Text style={styles.modalSectionTitle}>3. Prohibited Activities</Text>
+                            <Text style={styles.modalText}>- Submitting false reports or abuse claims.</Text>
+                            <Text style={styles.modalText}>- Attempting to breach the security features of the application.</Text>
+                            <Text style={styles.modalText}>- Misusing the educational resources or sharing them without proper acknowledgment.</Text>
+
+                            <Text style={styles.modalSectionTitle}>4. Suspension or Termination of Use</Text>
+                            <Text style={styles.modalText}>ChildGuard reserves the right to suspend or terminate user access to the application at any time if these Terms are violated.</Text>
+
+                            <Text style={styles.modalSectionTitle}>5. Modifications to Terms</Text>
+                            <Text style={styles.modalText}>ChildGuard may revise these Terms periodically. Continued use of the app constitutes acceptance of the updated Terms.</Text>
+
+                            <Text style={styles.modalTitle}>Privacy Policy</Text>
+
+                            <Text style={styles.modalSectionTitle}>1. Data Collection</Text>
+                            <Text style={styles.modalText}>We collect personal details, ID, selfie, and usage data for verification and functionality purposes.</Text>
+
+                            <Text style={styles.modalSectionTitle}>2. Use of Information</Text>
+                            <Text style={styles.modalText}>Your data will be used to verify identity, process reports, and improve user experience.</Text>
+
+                            <Text style={styles.modalSectionTitle}>3. Data Sharing</Text>
+                            <Text style={styles.modalText}>Data will only be shared for legal, law enforcement, or user-authorized reasons.</Text>
+
+                            <Text style={styles.modalSectionTitle}>4. Data Security</Text>
+                            <Text style={styles.modalText}>We implement strict security measures like encryption, secure storage, and audits.</Text>
+
+                            <Text style={styles.modalSectionTitle}>5. Your Rights</Text>
+                            <Text style={styles.modalText}>Users may access, correct, delete data, or withdraw consent (may affect functionality).</Text>
+
+                            <Text style={styles.modalSectionTitle}>6. Contact Information</Text>
+                            <Text style={styles.modalText}>For questions, contact support@childguard.com.</Text>
+
+                            <TouchableOpacity style={styles.closeButton} onPress={() => setShowTerms(false)}>
+                                <Text style={styles.closeButtonText}>Close</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </View>
+                </View>
+            </Modal>
         </GestureHandlerRootView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#F5F7FA",
-        paddingHorizontal: scaleSize(24),
-        paddingVertical: scaleSize(24),
-    },
-    // Removed logo style
-
-    title: {
-        fontSize: scaleFont(36),
-        fontWeight: "600",
-        marginBottom: scaleSize(16),
-        textAlign: 'center',
-        marginLeft: scaleSize(8),
-        color: "#2e2e2e",
-    },
-    form: {
-        width: "100%",
-    },
-    label: {
-        fontSize: scaleFont(16),
-        fontWeight: "600",
-        marginBottom: scaleSize(2),
-        color: "#2e2e2e",
-    },
-    inputContainer: {
-        paddingHorizontal: scaleSize(8),
-        borderBottomWidth: 1,
-        borderBottomColor: "#ccc",
-    },
-    inputText: {
-        fontSize: scaleFont(16),
-        paddingVertical: scaleSize(4),
-        paddingHorizontal: scaleSize(4),
-    },
-    signUpButton: {
-        backgroundColor: "#21285c",
-        borderRadius: scaleSize(10),
-        paddingVertical: scaleSize(12),
-        marginTop: scaleSize(16),
-    },
-    footer: {
-        flexDirection: "row",
-        marginTop: scaleSize(16),
-        justifyContent: "center",
-    },
-    footerText: {
-        fontSize: scaleFont(16),
-        color: "#333",
-    },
-    footerLink: {
-        fontSize: scaleFont(16),
-        color: "#2a5d9c",
-        marginLeft: scaleSize(6),
-        fontWeight: "600",
-    },
-    attachmentBox: {
-        borderWidth: 1,
-        borderColor: "#aaa",
-        borderStyle: "dashed",
-        borderRadius: scaleSize(10),
-        paddingVertical: scaleSize(12),
-        paddingHorizontal: scaleSize(14),
-        marginBottom: scaleSize(12),
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    attachmentBoxActive: {
-        borderColor: "#3CB371",
-        backgroundColor: "#e6f5ea",
-    },
-    attachmentPlaceholder: {
-        fontSize: scaleFont(15),
-        color: "#888",
-    },
-    attachmentContent: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        width: "100%",
-        paddingHorizontal: 8,
-    },
-    attachmentText: {
-        fontSize: scaleFont(15),
-        color: "#3CB371",
-        fontWeight: "600",
-    },
-    removeBtn: {
-        padding: 6,
-    },
-    removeBtnText: {
-        fontSize: scaleFont(14),
-        color: "#d9534f",
-        fontWeight: "600",
-    },
+    container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#F5F7FA", paddingHorizontal: 24, paddingVertical: 24 },
+    title: { fontSize: 36, fontWeight: "600", marginBottom: 16, textAlign: 'center', marginLeft: 8, color: "#2e2e2e" },
+    form: { width: "100%" },
+    label: { fontSize: 16, fontWeight: "600", marginBottom: 2, color: "#2e2e2e" },
+    inputContainer: { paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: "#ccc" },
+    inputText: { fontSize: 16, paddingVertical: 4, paddingHorizontal: 4 },
+    signUpButton: { backgroundColor: "#21285c", borderRadius: 10, paddingVertical: 12, marginTop: 16 },
+    footer: { flexDirection: "row", marginTop: 16, justifyContent: "center" },
+    footerText: { fontSize: 16, color: "#333" },
+    footerLink: { fontSize: 16, color: "#2a5d9c", marginLeft: 6, fontWeight: "600" },
+    attachmentBox: { borderWidth: 1, borderColor: "#aaa", borderStyle: "dashed", borderRadius: 10, paddingVertical: 12, paddingHorizontal: 14, marginBottom: 12, justifyContent: "center", alignItems: "center" },
+    attachmentBoxActive: { borderColor: "#3CB371", backgroundColor: "#e6f5ea" },
+    attachmentPlaceholder: { fontSize: 15, color: "#888" },
+    attachmentContent: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", paddingHorizontal: 8 },
+    attachmentText: { fontSize: 15, color: "#3CB371", fontWeight: "600" },
+    removeBtn: { padding: 6 },
+    removeBtnText: { fontSize: 14, color: "#d9534f", fontWeight: "600" },
     termsContainer: { flexDirection: "row", alignItems: "center", marginVertical: 0 },
-    termsText: { marginLeft: scaleSize(8), fontSize: scaleFont(14), color: "#333" },
+    termsText: { marginLeft: 8, fontSize: 14, color: "#333" },
     termsLink: { color: "#2a5d9c", fontWeight: "bold" },
-    modalContainer: { flex: 1, padding: 16, backgroundColor: "#fff" },
-    modalContent: { flex: 1 },
-    modalTitle: { fontSize: scaleFont(24), fontWeight: "bold", marginBottom: scaleSize(12) },
-    modalText: { fontSize: scaleFont(16), lineHeight: scaleSize(22) },
-    closeButton: { backgroundColor: "#21285c", padding: scaleSize(14), borderRadius: scaleSize(8), marginTop: scaleSize(20) },
-    closeButtonText: { color: "#fff", textAlign: "center", fontWeight: "600" }
+    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+    modalWrapper: { width: "90%", height: "85%", backgroundColor: "#fff", borderRadius: 12, padding: 16 },
+    modalContent: { paddingBottom: 30 },
+    modalTitle: { fontSize: 22, fontWeight: "bold", marginBottom: 12, color: "#21285c" },
+    modalSectionTitle: { fontSize: 17, fontWeight: "bold", marginTop: 15, marginBottom: 6, color: "#21285c" },
+    modalText: { fontSize: 15, color: "#333", lineHeight: 22 },
+    closeButton: { backgroundColor: "#21285c", padding: 14, borderRadius: 8, marginTop: 20 },
+    closeButtonText: { color: "#fff", textAlign: "center", fontWeight: "600" },
 });
