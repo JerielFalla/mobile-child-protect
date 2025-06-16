@@ -6,7 +6,7 @@ import { GestureHandlerRootView, Pressable } from "react-native-gesture-handler"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-const API_URL = "https://childguardbackend.vercel.app/"; // Replace with your backend URL
+const API_URL = "https://childguardbackend.vercel.app"; // Replace with your backend URL
 
 export default function Auth() {
     const router = useRouter();
