@@ -7,8 +7,20 @@ import { useEffect, useState } from 'react';
 import { registerRootComponent } from "expo";
 
 
+export const linking = {
+    prefixes: ["childguard://", "https://childguard.vercel.app"],
+    config: {
+        screens: {
+            reset: {
+                path: "reset/:token",
+            },
+        },
+    },
+};
+
+
 export default function RootLayout() {
-    const ctx = require.context("./app");
+
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
@@ -21,7 +33,7 @@ export default function RootLayout() {
                             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                             <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
                             <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-                            <ExpoRoot context={ctx} />
+
                             <Slot />
                         </Stack>
                     </PaperProvider>

@@ -1,16 +1,24 @@
 {
   "expo": {
     "name": "childguard",
-    "deepLinking": true,
-    "platforms": ["ios", "android", "web"],
+    "slug": "childguard",
+    "scheme": "childguard",
     "version": "1.0.0",
+    "orientation": "portrait",
+     "ios": {
+      "bundleIdentifier": "com.childguard.app"
+    },
+    "android": {
+      "package": "com.childguard.app"
+    },
+    "deepLinks": ["childguard://", "https://childguard.vercel.app"]
+  },
     "icon": "./assets/img/icon.png",
     "splash": {
       "image": "./assets/img/newlogo.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "scheme": "childguard",
     "plugins": [
       "expo-router",
       "expo-build-properties",

@@ -1,19 +1,27 @@
-// app/reset/[token].tsx
 import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { View, Text, TextInput, Button, Alert, StyleSheet } from "react-native";
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    Alert,
+    StyleSheet,
+    ActivityIndicator,
+} from "react-native";
 
 const API_URL = "https://childguardbackend.vercel.app";
 
 export default function ResetPasswordScreen() {
     const { token } = useLocalSearchParams();
+    const router = useRouter();
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
 
     const handleReset = async () => {
-        if (!password || password.length < 6)
+        if (!password || password.length < 6) {
             return Alert.alert("Password must be at least 6 characters");
+        }
 
         setLoading(true);
         try {
@@ -37,21 +45,61 @@ export default function ResetPasswordScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Set New Password</Text>
+            <Text style={styles.title}>Reset Your Password</Text>
             <TextInput
                 placeholder="Enter new password"
                 secureTextEntry
+                style={styles.input}
                 value={password}
                 onChangeText={setPassword}
-                style={styles.input}
             />
-            <Button title={loading ? "Resetting..." : "Reset Password"} onPress={handleReset} disabled={loading} />
+
+            <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleReset}
+                disabled={loading}
+            >
+                {loading ? (
+                    <ActivityIndicator color="#fff" />
+                ) : (
+                    <Text style={styles.buttonText}>Reset Password</Text>
+                )}
+            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: "center", padding: 20 },
-    title: { fontSize: 24, fontWeight: "bold", marginBottom: 20 },
-    input: { borderWidth: 1, padding: 12, borderRadius: 8, marginBottom: 20 },
+    container: {
+        flex: 1,
+        padding: 20,
+        justifyContent: "center",
+        backgroundColor: "#fff",
+    },
+    title: {
+        fontSize: 22,
+        marginBottom: 20,
+        fontWeight: "bold",
+        textAlign: "center",
+    },
+    input: {
+        height: 50,
+        backgroundColor: "#f1f1f1",
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        marginBottom: 20,
+    },
+    button: {
+        backgroundColor: "#2979ff",
+        padding: 15,
+        borderRadius: 8,
+        alignItems: "center",
+    },
+    buttonText: {
+        color: "#fff",
+        fontWeight: "bold",
+    },
+    buttonDisabled: {
+        opacity: 0.7,
+    },
 });
