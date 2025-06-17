@@ -4,14 +4,14 @@
     "slug": "childguard",
     "scheme": "childguard",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "platforms": ["ios", "android"],
     "ios": {
       "bundleIdentifier": "com.childguard.app"
     },
     "android": {
       "package": "com.childguard.app"
     },
-    "deepLinks": ["childguard://", "https://childguard.vercel.app"]
+    "deepLinks": ["childguard://"]
   },
   "icon": "./assets/img/icon.png",
   "splash": {

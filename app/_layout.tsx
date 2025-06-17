@@ -8,15 +8,16 @@ import { registerRootComponent } from "expo";
 
 
 export const linking = {
-    prefixes: ["childguard://", "https://childguard.vercel.app"],
+    prefixes: ["childguard://"],
     config: {
         screens: {
             reset: {
-                path: "reset/:token",
+                path: "reset/:token", // maps to app/reset/[token].tsx
             },
         },
     },
 };
+
 
 
 export default function RootLayout() {
