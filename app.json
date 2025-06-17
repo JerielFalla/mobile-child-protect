@@ -10,9 +10,18 @@
     },
     "android": {
       "googleServicesFile": "./google-services.json",
-      "package": "com.jeriel0312.childguard"
+      "package": "com.jeriel0312.childguard",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "data": {
+            "scheme": "childguard",
+            "host": "*"
+          },
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
-    "deepLinks": ["childguard://"],
     "icon": "./assets/img/icon.png",
     "splash": {
       "image": "./assets/img/newlogo.png",

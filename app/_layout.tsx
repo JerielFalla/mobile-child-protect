@@ -1,41 +1,32 @@
-import { ExpoRoot, Slot, Stack } from 'expo-router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import ChatProvider from '../context/ChatProvider';
-import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
-import { useEffect, useState } from 'react';
-import { registerRootComponent } from "expo";
-
-
-export const linking = {
-    prefixes: ["childguard://"],
-    config: {
-        screens: {
-            reset: {
-                path: "reset/:token", // maps to app/reset/[token].tsx
-            },
-        },
-    },
-};
-
-
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Provider as PaperProvider, DefaultTheme } from "react-native-paper";
+import { useEffect } from "react";
+import * as Linking from "expo-linking";
+import { Stack } from "expo-router";
+import ChatProvider from "../context/ChatProvider";
 
 export default function RootLayout() {
-
+    useEffect(() => {
+        const checkInitialUrl = async () => {
+            const initialUrl = await Linking.getInitialURL();
+            if (initialUrl) {
+                console.log("🔗 App opened from deep link:", initialUrl);
+            }
+        };
+        checkInitialUrl();
+    }, []);
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <SafeAreaProvider>
-
                 <ChatProvider>
                     <PaperProvider theme={DefaultTheme}>
                         <Stack screenOptions={{ headerShown: false }}>
-                            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
-                            <Stack.Screen name="(onboarding)" options={{ headerShown: false }} />
-
-                            <Slot />
+                            <Stack.Screen name="(auth)" />
+                            <Stack.Screen name="(tabs)" />
+                            <Stack.Screen name="(drawer)" />
+                            <Stack.Screen name="(onboarding)" />
                         </Stack>
                     </PaperProvider>
                 </ChatProvider>
@@ -43,5 +34,3 @@ export default function RootLayout() {
         </GestureHandlerRootView>
     );
 }
-
-registerRootComponent(RootLayout);
