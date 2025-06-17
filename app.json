@@ -1,6 +1,8 @@
 {
   "expo": {
     "name": "childguard",
+    "deepLinking": true,
+    "platforms": ["ios", "android", "web"],
     "version": "1.0.0",
     "icon": "./assets/img/icon.png",
     "splash": {
