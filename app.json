@@ -5,7 +5,7 @@
     "scheme": "childguard",
     "version": "1.0.0",
     "orientation": "portrait",
-     "ios": {
+    "ios": {
       "bundleIdentifier": "com.childguard.app"
     },
     "android": {
@@ -13,30 +13,29 @@
     },
     "deepLinks": ["childguard://", "https://childguard.vercel.app"]
   },
-    "icon": "./assets/img/icon.png",
-    "splash": {
-      "image": "./assets/img/newlogo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+  "icon": "./assets/img/icon.png",
+  "splash": {
+    "image": "./assets/img/newlogo.png",
+    "resizeMode": "contain",
+    "backgroundColor": "#ffffff"
+  },
+  "plugins": [
+    "expo-router",
+    "expo-build-properties",
+    "@react-native-firebase/app",
+    "@react-native-firebase/auth",
+    "expo-image-picker"
+  ],
+  "android": {
+    "googleServicesFile": "./google-services.json",
+    "package": "com.jeriel0312.childguard"
+  },
+  "extra": {
+    "router": {
+      "origin": false
     },
-    "plugins": [
-      "expo-router",
-      "expo-build-properties",
-      "@react-native-firebase/app",
-      "@react-native-firebase/auth",
-      "expo-image-picker"
-    ],
-    "android": {
-      "googleServicesFile": "./google-services.json",
-      "package": "com.jeriel0312.childguard"
-    },
-    "extra": {
-      "router": {
-        "origin": false
-      },
-      "eas": {
-        "projectId": "0c0aeacd-2572-4ccb-a382-ed298318a174"
-      }
+    "eas": {
+      "projectId": "0c0aeacd-2572-4ccb-a382-ed298318a174"
     }
   }
 }
