@@ -4,7 +4,10 @@
     "slug": "childguard",
     "scheme": "childguard",
     "version": "1.0.0",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "ios": {
       "bundleIdentifier": "com.childguard.app"
     },
@@ -18,8 +21,14 @@
             "scheme": "childguard",
             "host": "*"
           },
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
+      ],
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "icon": "./assets/img/icon.png",
@@ -40,8 +49,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "0c0aeacd-2572-4ccb-a382-ed298318a174"
+        "projectId": "38d789c2-39e8-4101-8a2b-fa843f0198d3"
       }
-    }
+    },
+    "owner": "joshua311"
   }
 }
