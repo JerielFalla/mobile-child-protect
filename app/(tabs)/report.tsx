@@ -77,6 +77,10 @@ const ReportForm = () => {
     const [showVictimAgePicker, setShowVictimAgePicker] = useState(false);
     const [reporterPhone, setReporterPhone] = useState("");
     const [reporterName, setReporterName] = useState(null);
+    const [victimIsSelf, setVictimIsSelf] = useState(false);
+    const [reporterAge, setReporterAge] = useState("");
+    const [reporterGender, setReporterGender] = useState("");
+    const [userId, setUserId] = useState(null);
 
 
     const [formData, setFormData] = useState({
@@ -87,6 +91,7 @@ const ReportForm = () => {
         natureOfAbuse: "",
         descriptionOfIncident: "",
         location: "",
+        incidentLocation: "",
         evidence: [],
         victimAge: "",
         victimGender: "",
@@ -105,8 +110,12 @@ const ReportForm = () => {
                     const res = await fetch(`${API_URL}/api/users/${userId}`);
                     const user = await res.json();
 
+                    setUserId(user.id);
                     setReporterName(user.name);
                     setReporterPhone(user.phoneNumber); // ✅ save to separate state
+                    setReporterAge(user.age || "");
+                    setReporterGender(user.gender || "");
+
                     setFormData((prev) => ({                // ✅ auto-fill into formData
                         ...prev,
                         reporterPhone: user.phoneNumber,
@@ -118,6 +127,17 @@ const ReportForm = () => {
         };
         getUserData();
     }, []);
+
+    useEffect(() => {
+        if (victimIsSelf) {
+            setFormData((prev) => ({
+                ...prev,
+                victimName: reporterName || "",
+                victimGender: reporterGender || "",
+                victimAge: reporterAge || "",
+            }));
+        }
+    }, [victimIsSelf, reporterName, reporterGender, reporterAge]);
 
 
 
@@ -197,6 +217,7 @@ const ReportForm = () => {
             "natureOfAbuse",
             "descriptionOfIncident",
             "location",
+            "incidentLocation",
             "victimName",
             "victimGender",
             "descriptionOfVictim",
@@ -236,6 +257,7 @@ const ReportForm = () => {
 
             const body = JSON.stringify({
                 ...submissionData,
+                userId,
                 reporterName,
                 reporterPhone,
                 abuserAnonymous,
@@ -372,7 +394,7 @@ const ReportForm = () => {
                             numberOfLines={4}
                             textAlignVertical="top"
                         />
-                        <Text style={styles.label}>Location</Text>
+                        <Text style={styles.label}>Reporter's Location</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Location"
@@ -381,6 +403,13 @@ const ReportForm = () => {
                             multiline={false}
                             numberOfLines={1}
                             textAlignVertical="center"
+                        />
+                        <Text style={styles.label}>Where did the incident happen?</Text>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Enter incident location"
+                            value={formData.incidentLocation}
+                            onChangeText={(t) => handleInputChange("incidentLocation", t)}
                         />
 
                         {/* NEW IMPLEMENTATION: Reporter's Contact Number */}
@@ -427,9 +456,10 @@ const ReportForm = () => {
                         <Text style={styles.label}>Name</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter full name (if known)"
+                            placeholder="Enter full name"
                             value={formData.victimName}
                             onChangeText={(t) => handleInputChange("victimName", t)}
+                            editable={!victimIsSelf}
                         />
                         <View style={styles.checkboxContainer}>
                             <Checkbox
@@ -438,6 +468,15 @@ const ReportForm = () => {
                                 color="#2a5d9c"
                             />
                             <Text style={styles.checkboxLabel}>Unknown Victim</Text>
+                        </View>
+
+                        <View style={styles.checkboxContainer}>
+                            <Checkbox
+                                status={victimIsSelf ? 'checked' : 'unchecked'}
+                                onPress={() => setVictimIsSelf(!victimIsSelf)}
+                                color="#2a5d9c"
+                            />
+                            <Text style={styles.checkboxLabel}>Victim is the Reporter (Self)</Text>
                         </View>
 
 
@@ -711,7 +750,7 @@ const styles = StyleSheet.create({
         borderColor: "#ccc",
         padding: 12,
         paddingVertical: 12,
-        marginBottom: 20,
+        marginBottom: 15,
         borderRadius: 8,
         backgroundColor: "#fff",
         height: 50,
@@ -799,7 +838,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
         borderRadius: 8,
         backgroundColor: "#fff",
-        height: 120,  // Taller height for description
+        height: 60,  // Taller height for description
         textAlignVertical: "top",  // Text starts at the top
     },
     checkboxContainer: {
