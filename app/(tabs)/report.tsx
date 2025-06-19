@@ -407,7 +407,7 @@ const ReportForm = () => {
                         <Text style={styles.label}>Where did the incident happen?</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="Enter incident location"
+                            placeholder="describe where the incident took place"
                             value={formData.incidentLocation}
                             onChangeText={(t) => handleInputChange("incidentLocation", t)}
                         />
