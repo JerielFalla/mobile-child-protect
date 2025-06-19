@@ -345,7 +345,6 @@ export default function Auth() {
 const styles = StyleSheet.create({
     scrollContainer: {
         paddingVertical: 20,
-        paddingHorizontal: 24,
         backgroundColor: "#F5F7FA",
     },
     container: {
@@ -409,16 +408,27 @@ const styles = StyleSheet.create({
         color: "#2a5d9c", fontWeight: "bold"
     },
     modalOverlay: {
-        flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center", padding: 20,
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        paddingHorizontal: 16,
+
     },
     modalWrapper: {
-        width: "90%", height: "85%", backgroundColor: "#fff", borderRadius: 12, padding: 16, maxHeight: '85%', overflow: 'hidden',
+        flex: 1,
+        marginTop: 100,
+        marginBottom: 100,
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        paddingHorizontal: 16,
+        paddingVertical: 20,
     },
     scrollView: {
         paddingHorizontal: 20,
     },
     modalContent: {
-        paddingBottom: 30,
+        flexGrow: 1,
+        paddingBottom: 40,
+        paddingHorizontal: 10,
 
     },
     modalTitle: {

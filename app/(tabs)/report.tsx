@@ -476,7 +476,7 @@ const ReportForm = () => {
                                 onPress={() => setVictimIsSelf(!victimIsSelf)}
                                 color="#2a5d9c"
                             />
-                            <Text style={styles.checkboxLabel}>Victim is the Reporter (Self)</Text>
+                            <Text style={styles.checkboxLabel}>I am the victim</Text>
                         </View>
 
 
