@@ -240,7 +240,13 @@ export default function Auth() {
                         <View style={styles.modalOverlay}>
                             <TouchableWithoutFeedback onPress={() => { }}>
                                 <View style={styles.modalWrapper}>
-                                    <ScrollView contentContainerStyle={styles.modalContent}>
+                                    <ScrollView
+                                        style={{ maxHeight: '100%' }}
+                                        contentContainerStyle={[styles.modalContent]}
+                                        showsVerticalScrollIndicator={true}
+                                        bounces={false}
+                                        persistentScrollbar={true}>
+
                                         <Text style={styles.modalTitle}>Terms and Conditions</Text>
 
                                         <Text style={styles.modalSectionTitle}>1. Agreement to Terms</Text>
@@ -299,7 +305,11 @@ export default function Auth() {
                         <View style={styles.modalOverlay}>
                             <TouchableWithoutFeedback onPress={() => { }}>
                                 <View style={styles.modalWrapper}>
-                                    <ScrollView contentContainerStyle={styles.modalContent}>
+                                    <ScrollView
+                                        contentContainerStyle={styles.modalContent}
+                                        showsVerticalScrollIndicator={true}
+                                        bounces={false}
+                                        persistentScrollbar={true}>
                                         <Text style={styles.modalTitle}>Privacy Policy</Text>
 
                                         <Text style={styles.modalSectionTitle}>1. Data Collection</Text>
@@ -410,26 +420,25 @@ const styles = StyleSheet.create({
     modalOverlay: {
         flex: 1,
         backgroundColor: "rgba(0,0,0,0.5)",
-        paddingHorizontal: 16,
-
+        justifyContent: "center", // Center vertically
+        alignItems: "center", // Center horizontally
+        paddingHorizontal: 8,
     },
     modalWrapper: {
-        flex: 1,
-        marginTop: 100,
-        marginBottom: 100,
+        width: "90%",
+        maxHeight: "80%",     // ✅ Allows modal to take up only part of screen
         backgroundColor: "#fff",
         borderRadius: 12,
-        paddingHorizontal: 16,
-        paddingVertical: 20,
-    },
-    scrollView: {
-        paddingHorizontal: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        flexShrink: 1,         // ✅ Ensures no overflow breakage
+        overflow: 'hidden',    // ✅ Prevent weird clipping on Android
     },
     modalContent: {
         flexGrow: 1,
-        paddingBottom: 40,
+        paddingBottom: 20,
         paddingHorizontal: 10,
-
+        paddingVertical: 10,
     },
     modalTitle: {
         fontSize: 22, fontWeight: "bold", marginBottom: 12, color: "#21285c"
@@ -455,3 +464,6 @@ const styles = StyleSheet.create({
         marginRight: 8,
     },
 });
+
+
+
