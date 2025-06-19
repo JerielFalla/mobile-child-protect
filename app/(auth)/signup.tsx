@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, Alert, TouchableOpacity, ScrollView, Modal, TouchableWithoutFeedback } from "react-native";
+import { StyleSheet, View, Text, Alert, TouchableOpacity, ScrollView, Modal, TouchableWithoutFeedback, SafeAreaView, KeyboardAvoidingView, Platform } from "react-native";
 import { Button, Input } from "@rneui/themed";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
@@ -238,15 +238,18 @@ export default function Auth() {
                 <Modal visible={showTerms} animationType="slide" transparent={true}>
                     <TouchableWithoutFeedback onPress={() => setShowTerms(false)}>
                         <View style={styles.modalOverlay}>
-                            <TouchableWithoutFeedback onPress={() => { }}>
-                                <View style={styles.modalWrapper}>
+                            <KeyboardAvoidingView
+                                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                                style={{ width: "100%", alignItems: "center", justifyContent: "center", flex: 1 }}
+                            >
+                                <SafeAreaView style={styles.modalWrapper}>
                                     <ScrollView
-                                        style={{ maxHeight: '100%' }}
-                                        contentContainerStyle={[styles.modalContent]}
+                                        style={{ flex: 1 }}
+                                        contentContainerStyle={styles.modalContent}
                                         showsVerticalScrollIndicator={true}
                                         bounces={false}
-                                        persistentScrollbar={true}>
-
+                                        persistentScrollbar={true}
+                                    >
                                         <Text style={styles.modalTitle}>Terms and Conditions</Text>
 
                                         <Text style={styles.modalSectionTitle}>1. Agreement to Terms</Text>
@@ -292,11 +295,10 @@ export default function Auth() {
                                             <Text style={styles.closeButtonText}>Close</Text>
                                         </TouchableOpacity>
                                     </ScrollView>
-                                </View>
-                            </TouchableWithoutFeedback>
+                                </SafeAreaView>
+                            </KeyboardAvoidingView>
                         </View>
                     </TouchableWithoutFeedback>
-
                 </Modal>
 
                 {/* Privacy Policy Modal */}
@@ -319,7 +321,7 @@ export default function Auth() {
 
                                         <Text style={styles.modalSectionTitle}>2. Use of Data</Text>
                                         <Text style={styles.modalText}>
-                                            Your data will only be used to verify identity, process reports, and improve the ChildGuard app’s features.
+                                            Your data will only be used to verify identity, process reports, and improve the ChildGuard app's features.
                                         </Text>
 
                                         <Text style={styles.modalSectionTitle}>3. Data Sharing</Text>
