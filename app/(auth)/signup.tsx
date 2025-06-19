@@ -463,7 +463,59 @@ const styles = StyleSheet.create({
         flex: 1,
         marginRight: 8,
     },
+    improvedModalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.6)",
+        justifyContent: "center",
+        alignItems: "center",
+        padding: 15,
+    },
+    improvedModalContainer: {
+        width: "100%",
+        maxHeight: "85%",
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        overflow: "hidden",
+        flexDirection: "column",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    improvedModalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#eee",
+    },
+    improvedModalTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        color: "#21285c",
+    },
+    improvedModalScrollView: {
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+    },
+    improvedCloseButton: {
+        backgroundColor: "#21285c",
+        padding: 15,
+        alignItems: "center",
+        marginHorizontal: 20,
+        marginVertical: 15,
+        borderRadius: 8,
+    },
+    improvedCloseButtonText: {
+        color: "#fff",
+        fontWeight: "600",
+        fontSize: 16,
+    },
 });
+
 
 
 
